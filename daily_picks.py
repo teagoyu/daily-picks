@@ -580,6 +580,40 @@ def change_class(pct: float) -> str:
     return "up" if pct >= 0 else "down"
 
 
+def build_miniapp_json(picks: dict, all_data: dict, indices: dict, report_date: datetime) -> dict:
+    """Build structured JSON payload for the WeChat Mini Program."""
+    def stock_to_card(s: dict) -> dict:
+        return {
+            "symbol": s.get("symbol", ""),
+            "name": s.get("name", ""),
+            "score": round(s.get("score", 0), 1),
+            "change": round(s.get("change", 0), 2),
+            "price": round(s.get("last", 0), 2),
+            "pe": round(s.get("pe"), 2) if s.get("pe") and s.get("pe") > 0 else None,
+            "pb": round(s.get("pb"), 2) if s.get("pb") else None,
+            "turnover_rate": round(s.get("turnover_rate"), 2) if s.get("turnover_rate") else None,
+            "rsi": round(s.get("rsi"), 1) if s.get("rsi") else None,
+            "ma_signal": s.get("ma_signal", ""),
+            "vol_ratio": round(s.get("vol_ratio"), 1) if s.get("vol_ratio") else None,
+            "sector": s.get("sector", ""),
+        }
+
+    markets = {}
+    for mkt in ("US", "HK", "CN"):
+        pick_symbols = {p["symbol"] for p in picks.get(mkt, [])}
+        all_stocks = all_data.get(mkt, [])
+        markets[mkt] = {
+            "picks": [stock_to_card(s) for s in all_stocks if s["symbol"] in pick_symbols],
+            "all": [stock_to_card(s) for s in sorted(all_stocks, key=lambda x: x.get("score", 0), reverse=True)],
+        }
+
+    return {
+        "date": report_date.strftime("%Y-%m-%d"),
+        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "markets": markets,
+    }
+
+
 def generate_html(
     indices: dict,
     us_stocks: list[dict],
@@ -1102,13 +1136,23 @@ def main():
     out_path.write_text(html, encoding="utf-8")
     log.info("Report saved: %s", out_path)
 
-    # 5. Upload to COS
+    # 5a. Build and save JSON for Mini Program
+    json_data = build_miniapp_json(picks, all_data, indices, report_date)
+    json_path = OUTPUT_DIR / f"daily_picks_{file_date}.json"
+    json_path.write_text(json.dumps(json_data, ensure_ascii=False, indent=2), encoding="utf-8")
+    log.info("JSON saved: %s", json_path)
+
+    # 5b. Upload to COS
     report_url = ""
     if not args.no_upload:
         remote_key = f"{COS_REMOTE_PREFIX}{file_date}.html"
         upload_to_cos(out_path, remote_key)
         report_url = f"{COS_PUBLIC_BASE}/{remote_key}"
         log.info("Public URL: %s", report_url)
+        # Upload JSON as both dated and latest (for Mini Program)
+        upload_to_cos(json_path, f"{COS_REMOTE_PREFIX}{file_date}.json")
+        upload_to_cos(json_path, f"{COS_REMOTE_PREFIX}latest.json")
+        log.info("Mini Program JSON: %s", f"{COS_PUBLIC_BASE}/{COS_REMOTE_PREFIX}latest.json")
     else:
         log.info("Upload skipped (--no-upload)")
 
