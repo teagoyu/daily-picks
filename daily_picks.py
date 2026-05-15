@@ -251,6 +251,7 @@ def collect_market_data(market: str, watchlist: list[tuple]) -> list[dict]:
             "pe": safe_float(idx.get("pe")),
             "pb": safe_float(idx.get("pb")),
             "market_cap": safe_float(idx.get("total_market_value")),
+            "turnover_rate": safe_float(idx.get("turnover_rate")),
         })
 
     stocks.sort(key=lambda x: x["turnover"], reverse=True)
@@ -583,17 +584,22 @@ def change_class(pct: float) -> str:
 def build_miniapp_json(picks: dict, all_data: dict, indices: dict, report_date: datetime) -> dict:
     """Build structured JSON payload for the WeChat Mini Program."""
     def stock_to_card(s: dict) -> dict:
+        # turnover_rate: US stocks use volume ratio as a proxy since Longbridge doesn't provide it
+        tr = s.get("turnover_rate")
+        if tr is None and s.get("vol_ratio"):
+            # Expose vol_ratio as a proxy indicator, clearly labeled
+            tr = None  # keep null; show vol_ratio in dedicated field instead
         return {
             "symbol": s.get("symbol", ""),
             "name": s.get("name", ""),
             "score": round(s.get("score", 0), 1),
-            "change": round(s.get("change", 0), 2),
+            "change": round(s.get("change_pct", 0), 2),
             "price": round(s.get("last", 0), 2),
             "pe": round(s.get("pe"), 2) if s.get("pe") and s.get("pe") > 0 else None,
             "pb": round(s.get("pb"), 2) if s.get("pb") else None,
-            "turnover_rate": round(s.get("turnover_rate"), 2) if s.get("turnover_rate") else None,
+            "turnover_rate": round(tr, 2) if tr else None,
             "rsi": round(s.get("rsi"), 1) if s.get("rsi") else None,
-            "ma_signal": s.get("ma_signal", ""),
+            "ma_signal": describe_ma(s),          # compute on-the-fly, was always ""
             "vol_ratio": round(s.get("vol_ratio"), 1) if s.get("vol_ratio") else None,
             "sector": s.get("sector", ""),
         }
@@ -1153,6 +1159,11 @@ def main():
         upload_to_cos(json_path, f"{COS_REMOTE_PREFIX}{file_date}.json")
         upload_to_cos(json_path, f"{COS_REMOTE_PREFIX}latest.json")
         log.info("Mini Program JSON: %s", f"{COS_PUBLIC_BASE}/{COS_REMOTE_PREFIX}latest.json")
+        # Upload static website
+        web_html = Path(__file__).parent / "web" / "index.html"
+        if web_html.exists():
+            upload_to_cos(web_html, "index.html")
+            log.info("Website: %s", f"{COS_PUBLIC_BASE}/index.html")
     else:
         log.info("Upload skipped (--no-upload)")
 
