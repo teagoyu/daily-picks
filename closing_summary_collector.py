@@ -114,17 +114,27 @@ def change_pct_from_quote(q: dict) -> float | None:
 
 
 def fmt_yi(val: float | None) -> str:
+    """val is in 万元 → convert to 亿元"""
     if val is None:
         return "—"
-    yi = val / 1e8
+    yi = val / 1e4
     return f"{yi:.0f}亿" if abs(yi) >= 100 else f"{yi:.2f}亿"
 
 
 def fmt_yi_signed(val: float | None) -> str:
+    """val is in 万元 → convert to 亿元"""
+    if val is None:
+        return "—"
+    yi = val / 1e4
+    return f"{'+' if yi >= 0 else ''}{yi:.2f}亿"
+
+
+def fmt_turnover(val: float | None) -> str:
+    """val is in 元 (from quote.turnover) → convert to 亿元"""
     if val is None:
         return "—"
     yi = val / 1e8
-    return f"{'+' if yi >= 0 else ''}{yi:.2f}亿"
+    return f"{yi:.0f}亿" if abs(yi) >= 100 else f"{yi:.1f}亿"
 
 
 def sector_class(chg: float) -> str:
@@ -167,7 +177,7 @@ def fetch_indices(quotes: dict[str, dict]) -> dict[str, dict]:
             "name": INDEX_NAMES[sym],
             "last": round(safe_float(q.get("last")) or 0, 2),
             "change_pct": chg,
-            "turnover": fmt_yi(turnover_raw) if turnover_raw else "—",
+            "turnover": fmt_turnover(turnover_raw) if turnover_raw else "—",
         }
     return out
 
