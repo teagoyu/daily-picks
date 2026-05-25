@@ -273,86 +273,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .mdl-k{font-size:13px;color:var(--muted)}
 .mdl-v{font-size:13px;font-weight:600;text-align:right}
 
-/* ══ BRIEFING ════════════════════════════════════════════ */
-.hero-briefing::before{background:radial-gradient(ellipse 70% 80% at 50% -20%,rgba(245,158,11,.07),transparent)}
-
-/* Pulse bar */
-.br-pulse{
-  display:flex;align-items:center;gap:18px;
-  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
-  padding:18px 22px;margin-top:24px;
-}
-.pulse-score{
-  font-size:44px;font-weight:900;line-height:1;min-width:68px;
-  font-variant-numeric:tabular-nums;
-}
-.pulse-info{flex:1}
-.pulse-label{font-size:17px;font-weight:700;margin-bottom:4px}
-.pulse-desc{font-size:12px;color:var(--muted)}
-.pulse-bar-wrap{flex:1;max-width:220px}
-.pulse-bar-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.pulse-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
-
-/* Tech grid */
-.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-@media(max-width:800px){.tech-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.tech-grid{grid-template-columns:1fr 1fr}}
-.tc{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
-  padding:14px 14px 12px;position:relative;overflow:hidden;
-  transition:border-color .18s,background .18s;cursor:default;
-}
-.tc:hover{border-color:rgba(56,139,253,.3);background:var(--bg-hover)}
-.tc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.tc-sym{font-size:13px;font-weight:700;color:var(--text)}
-.tc-name{font-size:11px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tc-price{font-size:17px;font-weight:700;margin-bottom:2px;font-variant-numeric:tabular-nums}
-.tc-chg{font-size:12px;font-weight:600}
-.tc-row{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
-.tc-sig{
-  font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.3px;
-}
-.tc-sig.bull{background:rgba(46,160,67,.15);color:var(--green-l)}
-.tc-sig.bear{background:rgba(207,47,42,.15);color:var(--red-l)}
-.tc-sig.neutral{background:rgba(125,133,144,.12);color:var(--muted)}
-.tc-rsi{font-size:11px;color:var(--muted)}
-.tc-rsi span{font-weight:600}
-.tc-ma{font-size:10px;color:var(--muted-2)}
-
-/* Earnings list */
-.earn-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.earn-item{
-  display:flex;align-items:center;gap:12px;
-  background:var(--bg-card);border:1px solid var(--border);
-  border-radius:10px;padding:10px 14px;
-}
-.earn-time{
-  font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;
-  background:rgba(212,167,44,.12);color:var(--yellow-l);min-width:36px;text-align:center;
-}
-.earn-sym{font-size:13px;font-weight:700;min-width:70px}
-.earn-name{font-size:12px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.earn-eps{font-size:12px;color:var(--text-2)}
-.earn-rev{font-size:11px;color:var(--muted)}
-
-/* News feed */
-.news-feed{display:flex;flex-direction:column;gap:0;margin-top:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.ni{
-  display:flex;align-items:flex-start;gap:12px;padding:12px 16px;
-  border-bottom:1px solid var(--border-l);
-  cursor:pointer;transition:background .15s;text-decoration:none;color:inherit;
-}
-.ni:last-child{border-bottom:none}
-.ni:hover{background:var(--bg-hover)}
-.ni-sym{
-  font-size:10px;font-weight:800;padding:3px 7px;border-radius:5px;
-  min-width:44px;text-align:center;flex-shrink:0;margin-top:2px;
-}
-.ni-body{flex:1;min-width:0}
-.ni-title{font-size:13px;font-weight:500;line-height:1.45;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ni-meta{font-size:11px;color:var(--muted);margin-top:4px}
-
 /* ══ FOOTER ══════════════════════════════════════════════ */
 .footer{border-top:1px solid var(--border-l);padding:24px 20px;text-align:center;font-size:11px;color:var(--muted-2)}
 
@@ -366,11 +286,118 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   .hero-h1{font-size:30px}
   .hero-stats{gap:18px}
   .logo-tag{display:none}
-  .picks-grid,.rpts-grid,.skel-grid{grid-template-columns:1fr}
+  .picks-grid,.rpts-grid,.skel-grid,.brf-tech-grid{grid-template-columns:1fr}
   .mkt-bar{overflow-x:auto;padding-bottom:2px;flex-wrap:nowrap;scrollbar-width:none}
   .mkt-bar::-webkit-scrollbar{display:none}
   .mdl-grid{grid-template-columns:1fr 1fr}
 }
+
+/* ══ BRIEFING ═══════════════════════════════════════════ */
+.hero-brf::before{background:radial-gradient(ellipse 70% 80% at 50% -20%,rgba(212,167,44,.08),transparent)}
+.hero-brf .hero-tag{color:var(--yellow-l);background:rgba(212,167,44,.1);border-color:rgba(227,179,65,.25)}
+.brf-pulse{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:22px 24px;margin-bottom:28px;background:linear-gradient(135deg,var(--bg-card2),var(--bg-card));border:1px solid var(--border-l);border-radius:var(--radius-l)}
+.brf-pulse-main{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brf-pulse-score{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1}
+.brf-pulse-score.green{color:var(--green-l);text-shadow:0 0 24px var(--green-glow)}
+.brf-pulse-score.yellow{color:var(--yellow-l)}
+.brf-pulse-score.red{color:var(--red-l);text-shadow:0 0 24px var(--red-glow)}
+.brf-pulse-tag{font-size:15px;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid var(--border)}
+.brf-pulse-tag.green{background:rgba(46,160,67,.15);color:var(--green-l);border-color:rgba(63,185,80,.35)}
+.brf-pulse-tag.yellow{background:rgba(212,167,44,.12);color:var(--yellow-l);border-color:rgba(227,179,65,.35)}
+.brf-pulse-tag.red{background:rgba(207,47,42,.12);color:var(--red-l);border-color:rgba(248,81,73,.35)}
+.brf-pulse-meta{font-size:12px;color:var(--muted);max-width:420px;line-height:1.5}
+.brf-gold-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(227,179,65,.2)}
+.brf-gold-h .sh-dot{background:linear-gradient(180deg,#fde047,var(--yellow));box-shadow:0 0 10px rgba(253,224,71,.4)}
+.brf-gold-h .sh-label{color:#fde047;letter-spacing:3px}
+.brf-tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:8px}
+.brf-tech-card{background:var(--bg-card);border:1px solid var(--border-l);border-radius:var(--radius);padding:14px 14px 12px;transition:border-color .15s,transform .15s}
+.brf-tech-card:hover{border-color:var(--border);transform:translateY(-2px)}
+.brf-tech-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.brf-tech-sym{font-size:14px;font-weight:800}
+.brf-tech-nm{font-size:11px;color:var(--muted);margin-top:2px}
+.brf-tech-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px}
+.brf-tech-price{font-weight:700}
+.brf-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:14px}
+.brf-badge.bull{background:rgba(46,160,67,.18);color:var(--green-l)}
+.brf-badge.bear{background:rgba(207,47,42,.18);color:var(--red-l)}
+.brf-badge.neutral{background:rgba(212,167,44,.15);color:var(--yellow-l)}
+.brf-rsi{font-variant-numeric:tabular-nums;font-weight:700}
+.brf-rsi.hot{color:var(--red-l)}
+.brf-rsi.cold{color:var(--green-l)}
+.brf-earn-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:8px}
+.brf-earn-table{width:100%;border-collapse:collapse;font-size:12px}
+.brf-earn-table th,.brf-earn-table td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border-l)}
+.brf-earn-table th{color:var(--muted-2);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.brf-earn-table td{font-weight:500;color:var(--text-2)}
+.brf-earn-table .sym{font-weight:700;color:var(--text)}
+.brf-earn-empty{color:var(--muted);font-size:13px;padding:12px 0}
+.brf-news-feed{max-height:420px;overflow-y:auto;padding-right:4px;border:1px solid var(--border-l);border-radius:var(--radius);background:var(--bg-card2)}
+.brf-news-item{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-l);cursor:pointer;transition:background .12s;text-align:left;width:100%;border:none;background:none;color:inherit;font:inherit}
+.brf-news-item:last-child{border-bottom:none}
+.brf-news-item:hover{background:var(--bg-hover)}
+.brf-news-badge{flex-shrink:0;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;align-self:flex-start;background:var(--blue-glow);color:var(--blue-l);border:1px solid rgba(88,166,255,.25);max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brf-news-badge.hk{background:rgba(248,81,73,.12);color:#f87171;border-color:rgba(248,81,73,.22)}
+.brf-news-body{flex:1;min-width:0}
+.brf-news-title{font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}
+.brf-news-time{font-size:11px;color:var(--muted);margin-top:6px}
+@media(max-width:640px){.brf-tech-grid{grid-template-columns:repeat(2,1fr)}.brf-pulse-score{font-size:40px}.brf-news-feed{max-height:320px}}
+@media(min-width:900px){.brf-tech-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* ══ CLOSING SUMMARY ════════════════════════════════════ */
+.hero-closing::before{background:radial-gradient(ellipse 70% 80% at 50% -20%,rgba(46,160,67,.07),transparent)}
+.cs-header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.cs-date{font-size:28px;font-weight:900;letter-spacing:-1px}
+.cs-label{font-size:13px;color:var(--muted);letter-spacing:2px;margin-left:auto}
+.cs-badge{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:.5px}
+.cs-badge-bull{background:rgba(46,160,67,.15);color:var(--green-l);border:1px solid rgba(63,185,80,.35)}
+.cs-badge-neutral{background:rgba(212,167,44,.12);color:var(--yellow-l);border:1px solid rgba(227,179,65,.3)}
+.cs-badge-bear{background:rgba(207,47,42,.15);color:var(--red-l);border:1px solid rgba(248,81,73,.35)}
+.cs-summary{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-l);
+  padding:18px 20px 18px 22px;margin-bottom:28px;border-left:4px solid var(--blue-l);
+  background:linear-gradient(90deg,rgba(56,139,253,.08),var(--bg-card) 40%);
+  font-size:15px;line-height:1.65;color:var(--text-2);font-weight:500;
+}
+.cs-idx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:800px){.cs-idx-grid{grid-template-columns:repeat(2,1fr)}}
+.cs-idx{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center}
+.cs-idx-n{font-size:11px;color:var(--muted);margin-bottom:6px}
+.cs-idx-v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.cs-idx-c{font-size:14px;font-weight:700;margin-top:4px}
+.cs-idx-t{font-size:11px;color:var(--muted-2);margin-top:6px}
+.cs-bread{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.cs-bread-i{font-size:12px;color:var(--muted);background:var(--bg-card2);border:1px solid var(--border-l);border-radius:8px;padding:6px 12px}
+.cs-bread-i span{font-weight:700;color:var(--text-2)}
+.cs-flow-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+@media(max-width:640px){.cs-flow-cols{grid-template-columns:1fr}}
+.cs-flow-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.cs-flow-hd{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--border-l);background:var(--bg-card2)}
+.cs-flow-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border-l);gap:10px}
+.cs-flow-row:last-child{border-bottom:none}
+.cs-flow-nm{font-size:13px;font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-flow-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.cs-flow-amt{font-size:13px;font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums}
+.cs-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cs-tag{font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px}
+.cs-tag-main{background:rgba(46,160,67,.15);color:var(--green-l);border:1px solid rgba(63,185,80,.3)}
+.cs-tag-sec{background:rgba(56,139,253,.12);color:var(--blue-l);border:1px solid rgba(88,166,255,.25)}
+.cs-tag-weak{background:rgba(207,47,42,.1);color:var(--red-l);border:1px solid rgba(248,81,73,.2);opacity:.85}
+.cs-table{width:100%;border-collapse:collapse;margin-top:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.cs-table th,.cs-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border-l);font-size:13px}
+.cs-table th{background:var(--bg-card2);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.cs-table tr:last-child td{border-bottom:none}
+.cs-table tr:hover td{background:var(--bg-hover)}
+.cs-rank{width:28px;color:var(--muted);font-weight:700}
+.cs-obs{list-style:none;margin-top:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.cs-obs li{padding:12px 16px 12px 36px;border-bottom:1px solid var(--border-l);font-size:13px;color:var(--text-2);position:relative;line-height:1.5}
+.cs-obs li:last-child{border-bottom:none}
+.cs-obs li::before{content:'→';position:absolute;left:14px;color:var(--blue-l);font-weight:700}
+.cs-risk{display:flex;align-items:center;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:10px}
+.cs-risk-badge{font-size:13px;font-weight:800;padding:6px 16px;border-radius:8px;flex-shrink:0}
+.cs-risk-low{background:rgba(46,160,67,.15);color:var(--green-l)}
+.cs-risk-mid{background:rgba(212,167,44,.12);color:var(--yellow-l)}
+.cs-risk-high{background:rgba(207,47,42,.15);color:var(--red-l)}
+.cs-risk-desc{font-size:13px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
@@ -391,6 +418,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </button>
       <button class="nav-tab" id="tab-analysis" onclick="switchView('analysis')">
         <span>🔬</span> 财报分析
+      </button>
+      <button class="nav-tab" id="tab-closing" onclick="switchView('closing')">
+        <span>📊</span> 收盘总结
       </button>
     </div>
     <div class="nav-right">
@@ -452,73 +482,54 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
-<!-- ══════════ BRIEFING VIEW ════════════════ -->
+<!-- ══════════ BRIEFING VIEW ═════════════════ -->
 <div class="page-view" id="view-briefing">
-  <div class="hero hero-briefing">
+  <div class="hero hero-brf">
     <div class="hero-inner">
-      <div class="hero-tag"><span>🌅</span>PRE-MARKET</div>
-      <div class="hero-h1" style="font-size:36px">开盘<em style="background:linear-gradient(90deg,#f59e0b,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">简报</em></div>
-      <div class="hero-sub" id="briefingUpdated">技术信号 · 热点资讯 · 财报日历</div>
+      <div class="hero-tag"><span>📊</span>PRE-MARKET</div>
+      <div class="hero-h1" style="font-size:34px">开盘<em style="background:linear-gradient(90deg,var(--yellow-l),var(--blue-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">简报</em></div>
+      <div class="hero-sub" id="brfHeroSub">美股盘前情绪 · 核心标的 · 财报与资讯聚合</div>
     </div>
   </div>
-
   <div class="wrap">
-    <!-- Market Pulse -->
-    <div class="br-pulse" id="brPulse">
-      <div class="skel" style="height:76px;border-radius:14px"></div>
+    <div id="brfPulse" class="brf-pulse">
+      <div class="brf-pulse-main">
+        <span class="brf-pulse-score yellow" id="brfScore">—</span>
+        <span class="brf-pulse-tag yellow" id="brfLabel">加载中</span>
+      </div>
+      <p class="brf-pulse-meta" id="brfPulseMeta">正在拉取市场情绪温度…</p>
     </div>
 
-    <!-- Technicals -->
-    <div class="sec" style="margin-top:28px">
+    <div class="sec">
       <div class="sh">
-        <div class="sh-dot" style="background:var(--blue-l)"></div>
-        <span class="sh-label">核心标的 · 技术面</span>
+        <div class="sh-dot blue"></div>
+        <span class="sh-label">核心标的技术面</span>
       </div>
-      <div class="filter-bar" style="margin-top:10px">
-        <div class="fpill active" data-tm="US" onclick="switchTechMarket('US')">🇺🇸 美股</div>
-        <div class="fpill" data-tm="HK" onclick="switchTechMarket('HK')">🇭🇰 港股</div>
-        <div class="fpill" data-tm="CN" onclick="switchTechMarket('CN')">🇨🇳 A股</div>
-      </div>
-      <div class="tech-grid" id="techGrid">
-        <div class="skel-grid">
-          <div class="skel" style="height:110px"></div><div class="skel" style="height:110px"></div>
-          <div class="skel" style="height:110px"></div><div class="skel" style="height:110px"></div>
-        </div>
-      </div>
+      <div class="brf-tech-grid" id="brfTech"></div>
     </div>
 
-    <!-- Earnings Today -->
-    <div class="sec" id="earningsTodaySec" style="margin-top:28px;display:none">
-      <div class="sh">
-        <div class="sh-dot" style="background:var(--yellow-l)"></div>
+    <div class="sec">
+      <div class="brf-gold-h">
+        <div class="sh-dot"></div>
         <span class="sh-label">今日财报</span>
-        <span class="sh-badge" id="earningsTodayCount"></span>
+        <span class="sh-badge" id="brfEarnTodayN">—</span>
       </div>
-      <div id="earningsTodayBox"></div>
-    </div>
-
-    <!-- Earnings Tomorrow -->
-    <div class="sec" id="earningsTomorrowSec" style="margin-top:28px;display:none">
-      <div class="sh">
-        <div class="sh-dot" style="background:var(--muted)"></div>
+      <div id="brfEarnToday"></div>
+      <div class="brf-gold-h" style="margin-top:22px">
+        <div class="sh-dot"></div>
         <span class="sh-label">明日财报</span>
-        <span class="sh-badge" id="earningsTomorrowCount"></span>
+        <span class="sh-badge" id="brfEarnTomN">—</span>
       </div>
-      <div id="earningsTomorrowBox"></div>
+      <div id="brfEarnTomorrow"></div>
     </div>
 
-    <!-- Hot News -->
-    <div class="sec" style="margin-top:28px">
+    <div class="sec">
       <div class="sh">
-        <div class="sh-dot" style="background:var(--red-l)"></div>
+        <div class="sh-dot purple"></div>
         <span class="sh-label">热点资讯</span>
-        <span class="sh-badge" id="newsCount"></span>
+        <span class="sh-badge" id="brfNewsN">TOP —</span>
       </div>
-      <div class="news-feed" id="newsFeed">
-        <div class="skel" style="height:64px;margin-bottom:8px"></div>
-        <div class="skel" style="height:64px;margin-bottom:8px"></div>
-        <div class="skel" style="height:64px"></div>
-      </div>
+      <div class="brf-news-feed" id="brfNews"></div>
     </div>
   </div>
 </div>
@@ -557,6 +568,25 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
+<!-- ══════════ CLOSING VIEW ════════════════ -->
+<div class="page-view" id="view-closing">
+  <div class="hero hero-closing">
+    <div class="hero-inner">
+      <div class="hero-tag"><span>📊</span>CLOSE REVIEW</div>
+      <div class="hero-h1" style="font-size:36px">A股<em style="background:linear-gradient(90deg,var(--green-l),var(--blue-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">收盘复盘</em></div>
+      <div class="hero-sub" id="closingUpdated">规则引擎 · Longbridge 实时数据 · 每日更新</div>
+    </div>
+  </div>
+
+  <div class="wrap" id="closingWrap">
+    <div class="skel-grid">
+      <div class="skel" style="height:120px"></div>
+      <div class="skel" style="height:200px"></div>
+      <div class="skel" style="height:160px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">Bloom · 数据来源 Longbridge · 仅供参考，不构成投资建议</div>
 
 <!-- ── Modal ──────────────────────────────── -->
@@ -574,7 +604,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 var COS='https://bloom-1300867387.cos.ap-guangzhou.myqcloud.com'
 var COLORS=['#1d6fca','#7c3aed','#be185d','#b45309','#047857','#b91c1c','#0369a1','#4d7c0f']
 
-var S={view:'picks',mkt:'US',picks:{},all:{},rpts:[],flt:'ALL',showAll:false}
+var S={view:'picks',mkt:'US',picks:{},all:{},rpts:[],flt:'ALL',showAll:false,briefing:null,closing:null}
 
 function avClr(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0x7fffffff;return COLORS[h%COLORS.length]}
 function avTxt(s){var t=s.replace(/\.(US|HK|SH|SZ|SG)$/i,'');return t.slice(0,t.length<=2?2:1).toUpperCase()}
@@ -588,128 +618,212 @@ function av(sym,sz,br){
   return '<div style="width:'+s+'px;height:'+s+'px;border-radius:'+r+'px;background:'+c+';display:flex;align-items:center;justify-content:center;font-size:'+Math.round(s*.31)+'px;font-weight:800;color:#fff">'+t+'</div>'
 }
 
+function escapeHtml(s){
+  if(s==null)return''
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function parseBrfDate(ts){
+  if(!ts)return null
+  var x=String(ts).trim().replace(' ','T')
+  if(/\+\d{2}:?\d{2}$/.test(x)||x.indexOf('Z')>0){}
+  else if(x.indexOf('+')<0&&x.indexOf('Z')<0)x+='Z'
+  var d=Date.parse(x)
+  return isNaN(d)?null:new Date(d)
+}
+
+function relativeZh(dt){
+  if(!dt)return '—'
+  var sec=Math.floor((Date.now()-dt.getTime())/1000)
+  if(sec<60)return '刚刚'
+  if(sec<3600)return Math.floor(sec/60)+'分钟前'
+  if(sec<86400)return Math.floor(sec/3600)+'小时前'
+  return Math.floor(sec/86400)+'天前'
+}
+
+function pulseTier(score){
+  if(score==null||isNaN(score))return {tier:'yellow',desc:'暂无有效读数，请稍后刷新。'}
+  if(score>=70)return {tier:'green',desc:'风险偏好偏高，趋势资金更愿意追涨；注意仓位与节奏。'}
+  if(score>=40)return {tier:'yellow',desc:'多空拉锯，情绪中性偏弱震荡；等待催化剂或主线明朗。'}
+  return {tier:'red',desc:'风险偏好受压，防守与减仓优先级更高；谨慎追高。'}
+}
+
+function renderBriefing(){
+  var d=S.briefing
+  if(!d){document.getElementById('brfPulseMeta').textContent='简报加载失败';return}
+  var mt=d.market_temp||{},sc=mt.score,lb=mt.label||'—'
+  var tier=pulseTier(sc)
+  var scoreEl=document.getElementById('brfScore'),labEl=document.getElementById('brfLabel')
+  scoreEl.textContent=sc!=null?sc:'—'
+  scoreEl.className='brf-pulse-score '+tier.tier
+  labEl.textContent=lb
+  labEl.className='brf-pulse-tag '+tier.tier
+  document.getElementById('brfPulseMeta').textContent=tier.desc
+  if(d.generated_at)document.getElementById('brfHeroSub').textContent='生成时间 '+d.generated_at+' · 美股盘前参考'
+
+  var tech=d.technicals||{},order=['TSLA.US','NVDA.US','META.US','AAPL.US','MSFT.US','PLTR.US','AMZN.US']
+  var th=''
+  for(var i=0;i<order.length;i++){
+    var sym=order[i],t=tech[sym]
+    if(!t)continue
+    var cc=cClr(t.change_rate),sig=t.signal_class||'neutral'
+    var rsi=t.rsi,rsiCls=''
+    if(rsi!=null){if(rsi>70)rsiCls=' hot';else if(rsi<30)rsiCls=' cold'}
+    th+='<div class="brf-tech-card">'+
+      '<div class="brf-tech-top">'+
+        '<div><div class="brf-tech-sym">'+sym+'</div><div class="brf-tech-nm">'+(t.name||'')+'</div></div>'+
+        '<span class="brf-badge '+sig+'">'+(t.signal||'—')+'</span>'+
+      '</div>'+
+      '<div class="brf-tech-row"><span class="brf-tech-price">'+(t.price!=null?t.price:'—')+'</span>'+
+      '<span style="color:'+cc+'">'+fChg(t.change_rate)+'</span></div>'+
+      '<div class="brf-tech-row"><span style="color:var(--muted)">RSI14</span>'+
+      '<span class="brf-rsi'+rsiCls+'">'+(rsi!=null?rsi:'—')+'</span></div>'+
+    '</div>'
+  }
+  document.getElementById('brfTech').innerHTML=th||'<div class="brf-earn-empty">暂无技术面数据</div>'
+
+  function earnTbl(rows){
+    if(!rows||!rows.length)return'<div class="brf-earn-empty">暂无日程</div>'
+    var h='<table class="brf-earn-table"><thead><tr><th>时段</th><th>标的</th><th>名称</th><th>EPS预期</th><th>营收预期</th></tr></thead><tbody>'
+    for(var j=0;j<rows.length;j++){
+      var e=rows[j]
+      h+='<tr><td>'+escapeHtml(e.time||'—')+'</td><td class="sym">'+escapeHtml(e.symbol)+'</td><td>'+escapeHtml(e.name||'')+'</td>'+
+        '<td>'+escapeHtml(e.eps_est||'—')+'</td><td>'+escapeHtml(e.rev_est||'—')+'</td></tr>'
+    }
+    return h+'</tbody></table>'
+  }
+  var et=d.earnings_today||[],em=d.earnings_tomorrow||[]
+  document.getElementById('brfEarnTodayN').textContent=et.length+' 条'
+  document.getElementById('brfEarnTomN').textContent=em.length+' 条'
+  document.getElementById('brfEarnToday').innerHTML=earnTbl(et)
+  document.getElementById('brfEarnTomorrow').innerHTML=earnTbl(em)
+
+  var news=d.hot_news||[]
+  document.getElementById('brfNewsN').textContent='TOP '+news.length
+  var nh=''
+  for(var k=0;k<news.length;k++){
+    var n=news[k],hk=(n.symbol&&String(n.symbol).indexOf('.HK')>0)
+    var pdt=parseBrfDate(n.published_at)
+    nh+='<button type="button" class="brf-news-item" onclick=\'onNewsClick('+JSON.stringify(JSON.stringify(n))+')\'>'+
+      '<span class="brf-news-badge'+(hk?' hk':'')+'">'+(n.symbol||'')+'</span>'+
+      '<div class="brf-news-body">'+
+        '<div class="brf-news-title">'+escapeHtml(n.title)+'</div>'+
+        '<div class="brf-news-time">'+(n.source?escapeHtml(n.source)+' · ':'')+relativeZh(pdt)+'</div>'+
+      '</div></button>'
+  }
+  document.getElementById('brfNews').innerHTML=nh||'<div class="empty" style="padding:28px"><div class="empty-msg">暂无资讯</div></div>'
+}
+
+function onNewsClick(js){
+  var n=JSON.parse(js)
+  if(n.url&&String(n.url).indexOf('http')===0){window.open(n.url,'_blank','noopener');return}
+  document.getElementById('mdlTitle').textContent=n.symbol||'资讯'
+  document.getElementById('mdlBody').innerHTML='<div style="padding:18px 0;line-height:1.55;font-size:14px;color:var(--text-2)">'+escapeHtml(n.title)+
+    (n.source?'<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+escapeHtml(n.source)+'</div>':'')+'</div>'
+  document.getElementById('overlay').classList.add('open')
+}
+
+/* ─ closing summary ─ */
+function riskCls(level){
+  if(!level)return 'cs-risk-mid'
+  if(level.indexOf('低')>=0)return 'cs-risk-low'
+  if(level.indexOf('高')>=0)return 'cs-risk-high'
+  return 'cs-risk-mid'
+}
+
+function flowRows(list,inflow){
+  if(!list||!list.length)return '<div class="cs-flow-row"><span class="cs-flow-nm" style="color:var(--muted)">暂无数据</span></div>'
+  var h=''
+  for(var i=0;i<list.length;i++){
+    var r=list[i],amt=r.net_inflow||'—'
+    var clr=inflow?'#3fb950':'#f85149'
+    h+='<div class="cs-flow-row">'+
+      '<div><div class="cs-flow-nm">'+escapeHtml(r.name||r.symbol)+'</div>'+
+      '<div class="cs-flow-sub">'+escapeHtml((r.symbol||'').replace(/\.(SH|SZ)$/,''))+' · '+fChg(r.change_pct)+'</div></div>'+
+      '<span class="cs-flow-amt" style="color:'+clr+'">'+escapeHtml(amt)+'</span></div>'
+  }
+  return h
+}
+
+function renderClosing(d){
+  if(!d){document.getElementById('closingWrap').innerHTML='<div class="empty"><div class="empty-icon">⚡</div><div class="empty-msg">数据加载失败</div></div>';return}
+  var tc=d.tone_class||'neutral',tone=d.tone||'—'
+  var br=d.breadth||{}
+  var idxOrder=['000001.SH','399001.SZ','399006.SZ','000300.SH']
+  var idxH=''
+  for(var i=0;i<idxOrder.length;i++){
+    var k=idxOrder[i],ix=(d.indices||{})[k]||{}
+    var cc=cClr(ix.change_pct)
+    idxH+='<div class="cs-idx">'+
+      '<div class="cs-idx-n">'+escapeHtml(ix.name||k)+'</div>'+
+      '<div class="cs-idx-v">'+((ix.last!=null)?ix.last:'—')+'</div>'+
+      '<div class="cs-idx-c" style="color:'+cc+'">'+fChg(ix.change_pct)+'</div>'+
+      '<div class="cs-idx-t">成交额 '+escapeHtml(ix.turnover||'—')+'</div></div>'
+  }
+  var secH=''
+  var sp=d.sector_perf||[]
+  for(var j=0;j<sp.length;j++){
+    var s=sp[j],sc2=cClr(s.change_pct)
+    secH+='<span class="cs-bread-i">'+escapeHtml(s.name)+' <span style="color:'+sc2+'">'+fChg(s.change_pct)+'</span></span>'
+  }
+  var mainH='',secT='',weakH=''
+  var mt=d.main_themes||[],st=d.secondary_themes||[],wk=d.weak_sectors||[]
+  for(var a=0;a<mt.length;a++)mainH+='<span class="cs-tag cs-tag-main">'+escapeHtml(mt[a])+'</span>'
+  for(var b=0;b<st.length;b++)secT+='<span class="cs-tag cs-tag-sec">'+escapeHtml(st[b])+'</span>'
+  for(var c=0;c<wk.length;c++)weakH+='<span class="cs-tag cs-tag-weak">'+escapeHtml(wk[c])+'</span>'
+  var gainers=d.top_gainers||d.limit_up_stocks||[]
+  var tbl='<table class="cs-table"><thead><tr><th>#</th><th>代码</th><th>名称</th><th>涨幅</th><th>板块</th></tr></thead><tbody>'
+  for(var g=0;g<gainers.length;g++){
+    var t=gainers[g],gc=cClr(t.change_pct)
+    tbl+='<tr><td class="cs-rank">'+(g+1)+'</td><td>'+escapeHtml((t.symbol||'').replace(/\.(SH|SZ)$/,''))+'</td>'+
+      '<td>'+escapeHtml(t.name||'')+'</td><td style="color:'+gc+';font-weight:700">'+fChg(t.change_pct)+'</td>'+
+      '<td style="color:var(--muted)">'+escapeHtml(t.sector||'—')+'</td></tr>'
+  }
+  tbl+='</tbody></table>'
+  var obs=d.next_day_observations||[],obsH=''
+  for(var o=0;o<obs.length;o++)obsH+='<li>'+escapeHtml(obs[o])+'</li>'
+  document.getElementById('closingWrap').innerHTML=
+    '<div class="cs-header">'+
+      '<div class="cs-date">'+escapeHtml(d.date||'—')+'</div>'+
+      '<div class="cs-badge cs-badge-'+tc+'">'+escapeHtml(tone)+'</div>'+
+      '<div class="cs-label">收盘复盘</div></div>'+
+    '<div class="cs-summary">'+escapeHtml(d.summary||'—')+'</div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot blue"></div><span class="sh-label">盘型 / 环境</span></div>'+
+      '<div class="cs-idx-grid">'+idxH+'</div>'+
+      '<div class="cs-bread"><span class="cs-bread-i">上涨 <span style="color:var(--green-l)">'+(br.up||0)+'</span></span>'+
+      '<span class="cs-bread-i">下跌 <span style="color:var(--red-l)">'+(br.down||0)+'</span></span>'+
+      '<span class="cs-bread-i">涨停 <span style="color:var(--yellow-l)">'+(br.limit_up||0)+'</span></span></div>'+
+      (secH?'<div class="cs-bread" style="margin-top:8px">'+secH+'</div>':'')+
+    '</div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot" style="background:var(--green-l)"></div><span class="sh-label">资金流证据</span></div>'+
+      '<div class="cs-flow-cols"><div class="cs-flow-col"><div class="cs-flow-hd">净流入 TOP5</div>'+flowRows(d.capital_inflow,true)+'</div>'+
+      '<div class="cs-flow-col"><div class="cs-flow-hd">净流出 TOP5</div>'+flowRows(d.capital_outflow,false)+'</div></div></div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot purple"></div><span class="sh-label">主线 / 活口</span></div>'+
+      '<div style="margin-bottom:8px;font-size:11px;color:var(--muted)">主线</div><div class="cs-tags">'+mainH+'</div>'+
+      '<div style="margin:12px 0 8px;font-size:11px;color:var(--muted)">次主线</div><div class="cs-tags">'+secT+'</div>'+
+      '<div style="margin:12px 0 8px;font-size:11px;color:var(--muted)">弱势</div><div class="cs-tags">'+weakH+'</div></div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot" style="background:var(--yellow-l)"></div><span class="sh-label">涨停 / 涨幅榜</span>'+
+      '<span class="sh-badge">'+(gainers.length)+' 只</span></div>'+tbl+'</div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot" style="background:var(--blue-l)"></div><span class="sh-label">次日观察</span></div>'+
+      '<ul class="cs-obs">'+obsH+'</ul></div>'+
+    '<div class="sec"><div class="sh"><div class="sh-dot" style="background:var(--red-l)"></div><span class="sh-label">市场风险</span></div>'+
+      '<div class="cs-risk"><span class="cs-risk-badge '+riskCls(d.risk_level)+'">'+escapeHtml(d.risk_level||'—')+'</span>'+
+      '<span class="cs-risk-desc">'+escapeHtml(d.risk_desc||'')+'</span></div></div>'
+  if(d.generated_at)document.getElementById('closingUpdated').textContent='更新于 '+d.generated_at+' · 规则引擎复盘'
+}
+
 /* ─ view switch ─ */
 function switchView(v){
   S.view=v
   document.getElementById('view-picks').classList.toggle('active',v==='picks')
   document.getElementById('view-briefing').classList.toggle('active',v==='briefing')
   document.getElementById('view-analysis').classList.toggle('active',v==='analysis')
+  document.getElementById('view-closing').classList.toggle('active',v==='closing')
   document.getElementById('tab-picks').classList.toggle('active',v==='picks')
   document.getElementById('tab-briefing').classList.toggle('active',v==='briefing')
   document.getElementById('tab-analysis').classList.toggle('active',v==='analysis')
+  document.getElementById('tab-closing').classList.toggle('active',v==='closing')
   window.scrollTo({top:0,behavior:'smooth'})
-}
-
-/* ─ briefing ─ */
-function relTime(iso){
-  if(!iso)return''
-  try{
-    var d=new Date(iso),now=Date.now(),diff=Math.floor((now-d.getTime())/1000)
-    if(diff<60)return diff+'秒前'
-    if(diff<3600)return Math.floor(diff/60)+'分钟前'
-    if(diff<86400)return Math.floor(diff/3600)+'小时前'
-    return Math.floor(diff/86400)+'天前'
-  }catch(e){return''}
-}
-function renderBriefing(d){
-  // Pulse bar
-  var t=d.market_temp||{},sc=t.score,lb=t.label||'—'
-  var clr=sc==null?'#7d8590':sc>=65?'#3fb950':sc>=40?'#d4a72c':'#f85149'
-  var desc=sc==null?'暂无数据':sc>=65?'市场情绪偏多，风险偏好较高':sc>=40?'市场情绪中性，多空分歧较大':'市场情绪偏空，注意风险控制'
-  var pct=sc==null?50:Math.min(100,Math.max(0,sc))
-  document.getElementById('brPulse').innerHTML=
-    '<div class="pulse-score" style="color:'+clr+'">'+( sc==null?'—':sc)+'</div>'+
-    '<div class="pulse-info">'+
-      '<div class="pulse-label" style="color:'+clr+'">'+lb+'</div>'+
-      '<div class="pulse-desc">'+desc+'</div>'+
-    '</div>'+
-    '<div class="pulse-bar-wrap">'+
-      '<div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-align:right">市场温度 '+pct+'/100</div>'+
-      '<div class="pulse-bar-bg"><div class="pulse-bar-fill" style="width:'+pct+'%;background:'+clr+'"></div></div>'+
-      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted-2);margin-top:3px"><span>恐慌</span><span>贪婪</span></div>'+
-    '</div>'
-
-  // Technicals
-  S.techByMarket=d.tech_by_market||{US:d.technicals||{},HK:{},CN:{}}
-  S.techMkt='US'
-  renderTechGrid('US')
-
-  // Earnings
-  function renderEarnings(list,secId,boxId,cntId){
-    if(!list||!list.length){document.getElementById(secId).style.display='none';return}
-    document.getElementById(secId).style.display=''
-    document.getElementById(cntId).textContent=list.length+' 家'
-    var h='<div class="earn-list">'
-    for(var i=0;i<list.length;i++){
-      var e=list[i]
-      h+='<div class="earn-item">'+
-        '<span class="earn-time">'+(e.time||'—')+'</span>'+
-        '<span class="earn-sym">'+e.symbol+'</span>'+
-        '<span class="earn-name">'+(e.name||'')+'</span>'+
-        (e.eps_est?'<span class="earn-eps">EPS '+e.eps_est+'</span>':'')+
-        (e.rev_est?'<span class="earn-rev">'+e.rev_est+'</span>':'')+
-      '</div>'
-    }
-    h+='</div>'
-    document.getElementById(boxId).innerHTML=h
-  }
-  renderEarnings(d.earnings_today,'earningsTodaySec','earningsTodayBox','earningsTodayCount')
-  renderEarnings(d.earnings_tomorrow,'earningsTomorrowSec','earningsTomorrowBox','earningsTomorrowCount')
-
-  // News
-  var news=d.hot_news||[]
-  document.getElementById('newsCount').textContent=news.length+' 条'
-  if(!news.length){document.getElementById('newsFeed').innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-msg">暂无资讯</div></div>';return}
-  var nh=''
-  for(var j=0;j<news.length;j++){
-    var n=news[j]
-    var sc2=avClr(n.symbol||'N'),sym2=(n.symbol||'').replace(/\.(US|HK|SH|SZ)$/i,'')
-    var href=n.url?(' href="'+n.url+'" target="_blank" rel="noopener"'):'onclick="return false"'
-    nh+='<a class="ni"'+href+'>'+
-      '<div class="ni-sym" style="background:'+sc2+'22;color:'+sc2+'">'+sym2+'</div>'+
-      '<div class="ni-body">'+
-        '<div class="ni-title">'+(n.title||'')+'</div>'+
-        '<div class="ni-meta">'+(n.source?n.source+' · ':'')+relTime(n.published_at)+'</div>'+
-      '</div>'+
-    '</a>'
-  }
-  document.getElementById('newsFeed').innerHTML=nh
-}
-
-/* ─ tech grid ─ */
-function renderTechGrid(mkt){
-  var tech=(S.techByMarket&&S.techByMarket[mkt])||{}
-  var syms=Object.keys(tech)
-  if(!syms.length){
-    document.getElementById('techGrid').innerHTML='<div class="empty"><div class="empty-icon">📡</div><div class="empty-msg">暂无数据</div></div>'
-    return
-  }
-  var th=''
-  for(var i=0;i<syms.length;i++){
-    var s=tech[syms[i]]
-    var chgV=s.change_rate,chgC=chgV==null?'#7d8590':chgV>=0?'#3fb950':'#f85149'
-    var chgT=(chgV==null?'—':(chgV>=0?'+':'')+chgV.toFixed(2)+'%')
-    var rsiC=s.rsi==null?'var(--muted)':s.rsi>=70?'#f85149':s.rsi<=30?'#3fb950':'var(--text-2)'
-    var maT=''
-    if(s.ma5&&s.ma20)maT='MA5 '+s.ma5.toFixed(1)+' / MA20 '+s.ma20.toFixed(1)
-    var dispSym=s.symbol.replace(/\.(US|HK|SH|SZ)$/,'')
-    th+='<div class="tc">'+
-      '<div class="tc-top">'+av(s.symbol,28,6)+'<div><div class="tc-sym">'+dispSym+'</div><div class="tc-name">'+s.name+'</div></div></div>'+
-      '<div class="tc-price" style="color:'+chgC+'">'+(s.price==null?'—':s.price)+'</div>'+
-      '<div class="tc-chg" style="color:'+chgC+'">'+chgT+'</div>'+
-      '<div class="tc-row">'+
-        '<span class="tc-sig '+s.signal_class+'">'+s.signal+'</span>'+
-        (s.rsi!=null?'<span class="tc-rsi">RSI <span style="color:'+rsiC+'">'+s.rsi+'</span></span>':'')+
-      '</div>'+
-      (maT?'<div class="tc-ma">'+maT+'</div>':'')+
-    '</div>'
-  }
-  document.getElementById('techGrid').innerHTML=th
-}
-function switchTechMarket(mkt){
-  S.techMkt=mkt
-  document.querySelectorAll('[data-tm]').forEach(function(el){el.classList.toggle('active',el.dataset.tm===mkt)})
-  renderTechGrid(mkt)
 }
 
 /* ─ market switch ─ */
@@ -880,15 +994,19 @@ fetch(COS+'/reports/index.json?t='+Date.now())
 
 fetch(COS+'/briefing/latest.json?t='+Date.now())
   .then(function(r){return r.json()})
-  .then(function(d){
-    S.briefing=d
-    var ts=d.generated_at
-    if(ts){try{document.getElementById('briefingUpdated').textContent='更新于 '+relTime(ts)+' · 技术信号 · 热点资讯 · 财报日历'}catch(e){}}
-    renderBriefing(d)
-  })
+  .then(function(d){S.briefing=d;renderBriefing()})
   .catch(function(){
-    document.getElementById('brPulse').innerHTML='<div class="empty" style="width:100%"><div class="empty-icon">⚡</div><div class="empty-msg">数据加载失败，请稍后刷新</div></div>'
+    document.getElementById('brfPulseMeta').textContent='简报尚未生成或网络不可用，请稍后重试。'
+    document.getElementById('brfTech').innerHTML='<div class="brf-earn-empty">—</div>'
+    document.getElementById('brfEarnToday').innerHTML='<div class="brf-earn-empty">—</div>'
+    document.getElementById('brfEarnTomorrow').innerHTML='<div class="brf-earn-empty">—</div>'
+    document.getElementById('brfNews').innerHTML='<div class="empty" style="padding:28px"><div class="empty-msg">暂无资讯</div></div>'
   })
+
+fetch(COS+'/closing/latest.json?t='+Date.now())
+  .then(function(r){return r.json()})
+  .then(function(d){S.closing=d;renderClosing(d)})
+  .catch(function(){renderClosing(null)})
 </script>
 </body>
 </html>
