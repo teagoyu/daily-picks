@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A-share closing summary collector: Longbridge CLI -> JSON -> Tencent COS."""
+"""A-share + HK closing summary collector: Longbridge CLI -> JSON -> Tencent COS."""
 
 from __future__ import annotations
 
@@ -20,10 +20,13 @@ COSCMD = "/Users/yuhao/Library/Python/3.9/bin/coscmd"
 COS_REMOTE = "closing/latest.json"
 TMP_OUT = Path("/tmp/closing_latest.json")
 
-INDEX_SYMBOLS = ["000001.SH", "399001.SZ", "399006.SZ", "000300.SH"]
-INDEX_NAMES = {"000001.SH": "上证指数", "399001.SZ": "深成指", "399006.SZ": "创业板", "000300.SH": "沪深300"}
+# ── CN market ────────────────────────────────────────────────────────────────
+CN_INDEX_SYMBOLS = ["000001.SH", "399001.SZ", "399006.SZ", "000300.SH"]
+CN_INDEX_NAMES = {"000001.SH": "上证指数", "399001.SZ": "深成指", "399006.SZ": "创业板", "000300.SH": "沪深300"}
+CN_PRIMARY_INDEX = "000001.SH"
+CN_INDEX_LABEL = "上证"
 
-SECTOR_STOCKS = {
+CN_SECTOR_STOCKS = {
     "AI/科技": ["600519.SH", "300750.SZ", "000977.SZ", "002594.SZ"],
     "半导体": ["688981.SH", "603986.SH", "300529.SZ", "688012.SH"],
     "新能源": ["601012.SH", "002594.SZ", "300750.SZ", "688599.SH"],
@@ -41,7 +44,7 @@ TOP_CN_STOCKS = [
     "002371.SZ", "300253.SZ", "688981.SH", "601127.SH", "002049.SZ",
 ]
 
-SYMBOL_NAMES = {
+CN_SYMBOL_NAMES = {
     "600519.SH": "贵州茅台", "300750.SZ": "宁德时代", "601318.SH": "中国平安",
     "000858.SZ": "五粮液", "603259.SH": "药明康德", "601012.SH": "隆基绿能",
     "300059.SZ": "东方财富", "300570.SZ": "太辰光", "002475.SZ": "立讯精密",
@@ -57,12 +60,49 @@ SYMBOL_NAMES = {
     "688005.SH": "容百科技", "002402.SZ": "和而泰", "688599.SH": "天合光能",
 }
 
-SYMBOL_TO_SECTOR = {}
-for sector, syms in SECTOR_STOCKS.items():
-    for s in syms:
-        SYMBOL_TO_SECTOR.setdefault(s, sector)
+# ── HK market ────────────────────────────────────────────────────────────────
+HK_INDEX_SYMBOLS = ["HSI.HK", "HSCEI.HK", "HSTECH.HK"]
+HK_INDEX_NAMES = {"HSI.HK": "恒生指数", "HSCEI.HK": "国企指数", "HSTECH.HK": "恒生科技"}
+HK_PRIMARY_INDEX = "HSI.HK"
+HK_INDEX_LABEL = "恒指"
+
+HK_SECTOR_STOCKS = {
+    "科技互联网": ["700.HK", "9988.HK", "3690.HK"],
+    "金融银行": ["939.HK", "1398.HK", "3988.HK"],
+    "能源资源": ["857.HK", "386.HK", "883.HK"],
+    "消费零售": ["9999.HK", "1929.HK", "6690.HK"],
+    "医疗健康": ["1177.HK", "2269.HK", "6098.HK"],
+    "地产": ["1109.HK", "960.HK", "2202.HK"],
+}
+
+TOP_HK_STOCKS = [
+    "700.HK", "9988.HK", "3690.HK", "939.HK", "1398.HK",
+    "2318.HK", "388.HK", "1810.HK", "9999.HK", "2269.HK",
+]
+
+HK_SYMBOL_NAMES = {
+    "700.HK": "腾讯控股", "9988.HK": "阿里巴巴", "3690.HK": "美团",
+    "939.HK": "建设银行", "1398.HK": "工商银行", "3988.HK": "中国银行",
+    "857.HK": "中国石油", "386.HK": "中国石化", "883.HK": "中国海油",
+    "9999.HK": "网易", "1929.HK": "周大福", "6690.HK": "海尔智家",
+    "1177.HK": "中国生物制药", "2269.HK": "药明生物", "6098.HK": "碧桂园服务",
+    "1109.HK": "华润置地", "960.HK": "龙湖集团", "2202.HK": "万科企业",
+    "2318.HK": "中国平安", "388.HK": "香港交易所", "1810.HK": "小米集团",
+}
 
 CONCURRENCY = 8
+
+
+def _build_symbol_to_sector(sector_stocks: dict[str, list[str]]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for sector, syms in sector_stocks.items():
+        for s in syms:
+            out.setdefault(s, sector)
+    return out
+
+
+CN_SYMBOL_TO_SECTOR = _build_symbol_to_sector(CN_SECTOR_STOCKS)
+HK_SYMBOL_TO_SECTOR = _build_symbol_to_sector(HK_SECTOR_STOCKS)
 
 
 def run_lb(args: list[str], timeout: int = 45) -> str | None:
@@ -167,14 +207,18 @@ def fetch_quotes_batch(symbols: list[str]) -> dict[str, dict]:
     return {it["symbol"]: it for it in data if isinstance(it, dict) and it.get("symbol")}
 
 
-def fetch_indices(quotes: dict[str, dict]) -> dict[str, dict]:
+def fetch_indices(
+    quotes: dict[str, dict],
+    index_symbols: list[str],
+    index_names: dict[str, str],
+) -> dict[str, dict]:
     out: dict[str, dict] = {}
-    for sym in INDEX_SYMBOLS:
+    for sym in index_symbols:
         q = quotes.get(sym, {})
         chg = change_pct_from_quote(q) or 0.0
         turnover_raw = safe_float(q.get("turnover"))
         out[sym] = {
-            "name": INDEX_NAMES[sym],
+            "name": index_names[sym],
             "last": round(safe_float(q.get("last")) or 0, 2),
             "change_pct": chg,
             "turnover": fmt_turnover(turnover_raw) if turnover_raw else "—",
@@ -182,9 +226,12 @@ def fetch_indices(quotes: dict[str, dict]) -> dict[str, dict]:
     return out
 
 
-def compute_sector_perf(quotes: dict[str, dict]) -> list[dict]:
+def compute_sector_perf(
+    quotes: dict[str, dict],
+    sector_stocks: dict[str, list[str]],
+) -> list[dict]:
     rows: list[dict] = []
-    for sector, syms in SECTOR_STOCKS.items():
+    for sector, syms in sector_stocks.items():
         changes = [change_pct_from_quote(quotes[s]) for s in syms if quotes.get(s)]
         changes = [c for c in changes if c is not None]
         if not changes:
@@ -212,7 +259,11 @@ def fetch_capital_one(symbol: str) -> float | None:
     return parse_capital_net(parse_json(run_lb(["capital", symbol], timeout=30)))
 
 
-def collect_capital_flows(symbols: list[str], quotes: dict[str, dict]) -> tuple[list[dict], list[dict]]:
+def collect_capital_flows(
+    symbols: list[str],
+    quotes: dict[str, dict],
+    symbol_names: dict[str, str],
+) -> tuple[list[dict], list[dict]]:
     rows: list[dict] = []
 
     def _job(sym: str) -> dict | None:
@@ -222,7 +273,7 @@ def collect_capital_flows(symbols: list[str], quotes: dict[str, dict]) -> tuple[
         q = quotes.get(sym, {})
         return {
             "symbol": sym,
-            "name": SYMBOL_NAMES.get(sym, q.get("name") or sym),
+            "name": symbol_names.get(sym, q.get("name") or sym),
             "net_inflow_raw": net,
             "net_inflow": fmt_yi_signed(net),
             "change_pct": change_pct_from_quote(q) or 0.0,
@@ -264,7 +315,12 @@ def count_limit_streak(klines: list[dict], symbol: str) -> int:
     return streak
 
 
-def stock_row(sym: str, quotes: dict[str, dict]) -> dict | None:
+def stock_row(
+    sym: str,
+    quotes: dict[str, dict],
+    symbol_names: dict[str, str],
+    symbol_to_sector: dict[str, str],
+) -> dict | None:
     q = quotes.get(sym)
     if not q:
         return None
@@ -273,15 +329,34 @@ def stock_row(sym: str, quotes: dict[str, dict]) -> dict | None:
         return None
     return {
         "symbol": sym,
-        "name": SYMBOL_NAMES.get(sym, q.get("name") or sym),
+        "name": symbol_names.get(sym, q.get("name") or sym),
         "change_pct": chg,
-        "sector": SYMBOL_TO_SECTOR.get(sym, "—"),
+        "sector": symbol_to_sector.get(sym, "—"),
     }
 
 
-def collect_gainers_limit_streak(quotes: dict[str, dict]) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
-    all_syms = list({s for syms in SECTOR_STOCKS.values() for s in syms})
-    rows = [stock_row(s, quotes) for s in all_syms]
+def collect_gainers_from_sectors(
+    quotes: dict[str, dict],
+    sector_stocks: dict[str, list[str]],
+    symbol_names: dict[str, str],
+    symbol_to_sector: dict[str, str],
+    top_n: int = 10,
+) -> list[dict]:
+    all_syms = list({s for syms in sector_stocks.values() for s in syms})
+    rows = [stock_row(s, quotes, symbol_names, symbol_to_sector) for s in all_syms]
+    rows = [r for r in rows if r]
+    rows.sort(key=lambda x: x["change_pct"], reverse=True)
+    return rows[:top_n]
+
+
+def collect_gainers_limit_streak(
+    quotes: dict[str, dict],
+    sector_stocks: dict[str, list[str]],
+    symbol_names: dict[str, str],
+    symbol_to_sector: dict[str, str],
+) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
+    all_syms = list({s for syms in sector_stocks.values() for s in syms})
+    rows = [stock_row(s, quotes, symbol_names, symbol_to_sector) for s in all_syms]
     rows = [r for r in rows if r]
     limit_up = [r for r in rows if is_limit_up(r["change_pct"], r["symbol"])]
     rows.sort(key=lambda x: x["change_pct"], reverse=True)
@@ -297,16 +372,16 @@ def collect_gainers_limit_streak(quotes: dict[str, dict]) -> tuple[list[dict], l
                 q = quotes.get(sym, {})
                 streak_rows.append({
                     "symbol": sym,
-                    "name": SYMBOL_NAMES.get(sym, sym),
+                    "name": symbol_names.get(sym, sym),
                     "change_pct": change_pct_from_quote(q) or 0,
-                    "sector": SYMBOL_TO_SECTOR.get(sym, "—"),
+                    "sector": symbol_to_sector.get(sym, "—"),
                     "streak": streak,
                 })
     streak_rows.sort(key=lambda x: (x["streak"], x["change_pct"]), reverse=True)
     return rows[:10], top_losers, limit_up, streak_rows[:8]
 
 
-def fetch_hot_news() -> list[dict]:
+def fetch_hot_news_cn() -> list[dict]:
     rows: list[dict] = []
 
     def _news(args: list[str]) -> list[dict]:
@@ -340,8 +415,46 @@ def fetch_hot_news() -> list[dict]:
     return deduped[:15]
 
 
-def compute_breadth(quotes: dict[str, dict], limit_up: list[dict]) -> dict[str, int]:
-    all_syms = list({s for syms in SECTOR_STOCKS.values() for s in syms})
+def fetch_hot_news_hk() -> list[dict]:
+    rows: list[dict] = []
+
+    def _news(args: list[str]) -> list[dict]:
+        items = parse_json(run_lb(args, timeout=30))
+        if not items:
+            return []
+        if isinstance(items, dict):
+            items = [items]
+        out = []
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            title = (it.get("title") or it.get("headline") or "").strip()
+            if title:
+                out.append({
+                    "title": title,
+                    "source": str(it.get("source") or it.get("publisher") or ""),
+                    "published_at": str(it.get("published_at") or it.get("time") or ""),
+                    "url": str(it.get("url") or it.get("link") or ""),
+                })
+        return out
+
+    rows.extend(_news(["news", "HSI.HK", "--count", "10", "--lang", "zh-CN"]))
+    rows.extend(_news(["news", "search", "港股 主线", "--lang", "zh-CN", "--count", "5"]))
+    seen, deduped = set(), []
+    for r in rows:
+        key = r["title"].lower()
+        if key not in seen:
+            seen.add(key)
+            deduped.append(r)
+    return deduped[:15]
+
+
+def compute_breadth(
+    quotes: dict[str, dict],
+    sector_stocks: dict[str, list[str]],
+    limit_up: list[dict] | None = None,
+) -> dict[str, int]:
+    all_syms = list({s for syms in sector_stocks.values() for s in syms})
     up = down = flat = 0
     for sym in all_syms:
         chg = change_pct_from_quote(quotes.get(sym, {}))
@@ -353,30 +466,41 @@ def compute_breadth(quotes: dict[str, dict], limit_up: list[dict]) -> dict[str, 
             down += 1
         else:
             flat += 1
-    return {"up": up, "down": down, "flat": flat, "limit_up": len(limit_up)}
+    breadth: dict[str, int] = {"up": up, "down": down, "flat": flat}
+    if limit_up is not None:
+        breadth["limit_up"] = len(limit_up)
+    return breadth
 
 
-def generate_summary(indices: dict, sector_perf: list[dict]) -> tuple[str, str]:
-    sh_chg = float(indices.get("000001.SH", {}).get("change_pct") or 0)
-    if sh_chg >= 1.0:
+def generate_summary(
+    indices: dict,
+    sector_perf: list[dict],
+    primary_index: str,
+    index_label: str,
+) -> tuple[str, str]:
+    idx_chg = float(indices.get(primary_index, {}).get("change_pct") or 0)
+    if idx_chg >= 1.0:
         tone = "多头强势"
-    elif sh_chg >= 0:
+    elif idx_chg >= 0:
         tone = "震荡偏强"
-    elif sh_chg >= -1.0:
+    elif idx_chg >= -1.0:
         tone = "震荡偏弱"
     else:
         tone = "调整下跌"
     if not sector_perf:
-        return f"今日市场{tone}，上证{sh_chg:+.2f}%；板块数据暂缺。", tone
+        return f"今日市场{tone}，{index_label}{idx_chg:+.2f}%；板块数据暂缺。", tone
     top_sector, worst_sector = sector_perf[0]["name"], sector_perf[-1]["name"]
-    mood = "偏积极" if sh_chg > 0 else "偏谨慎"
+    mood = "偏积极" if idx_chg > 0 else "偏谨慎"
     return (
-        f"今日市场{tone}，上证{sh_chg:+.2f}%；{top_sector}板块领涨，{worst_sector}承压；市场情绪{mood}。",
+        f"今日市场{tone}，{index_label}{idx_chg:+.2f}%；{top_sector}板块领涨，{worst_sector}承压；市场情绪{mood}。",
         tone,
     )
 
 
-def identify_themes(sector_perf: list[dict], limit_up: list[dict]) -> tuple[list[str], list[str], list[str]]:
+def identify_themes(
+    sector_perf: list[dict],
+    limit_up: list[dict] | None = None,
+) -> tuple[list[str], list[str], list[str]]:
     main, secondary, weak = [], [], []
     for row in sector_perf:
         if row["change_pct"] >= 1.0 and len(main) < 2:
@@ -385,10 +509,11 @@ def identify_themes(sector_perf: list[dict], limit_up: list[dict]) -> tuple[list
             secondary.append(row["name"])
         elif row["change_pct"] < -0.5:
             weak.append(row["name"])
-    for lu in limit_up:
-        sec = lu.get("sector")
-        if sec and sec not in main and sec not in secondary:
-            (main if len(main) < 2 else secondary).append(sec)
+    if limit_up:
+        for lu in limit_up:
+            sec = lu.get("sector")
+            if sec and sec not in main and sec not in secondary:
+                (main if len(main) < 2 else secondary).append(sec)
     if not main and sector_perf:
         main = [sector_perf[0]["name"]]
     if not secondary and len(sector_perf) > 1:
@@ -398,17 +523,22 @@ def identify_themes(sector_perf: list[dict], limit_up: list[dict]) -> tuple[list
     return main[:2], secondary[:3], weak[:3]
 
 
-def assess_risk(tone: str, breadth: dict, sh_chg: float) -> tuple[str, str]:
-    if "下跌" in tone or sh_chg <= -1.5:
+def assess_risk(tone: str, breadth: dict, idx_chg: float, has_limit_up: bool = True) -> tuple[str, str]:
+    if "下跌" in tone or idx_chg <= -1.5:
         return "偏高", "指数明显走弱，注意控制仓位与止损纪律"
-    if breadth.get("down", 0) > breadth.get("up", 0) and sh_chg < 0:
+    if breadth.get("down", 0) > breadth.get("up", 0) and idx_chg < 0:
         return "中等", "跌多涨少，结构性机会与风险并存"
-    if breadth.get("limit_up", 0) >= 3 and sh_chg > 0:
+    if has_limit_up and breadth.get("limit_up", 0) >= 3 and idx_chg > 0:
         return "偏低", "涨停活跃、指数偏强，短线情绪尚可"
     return "中等", "市场震荡，宜精选主线、避免追高"
 
 
-def next_day_observations(main: list[str], secondary: list[str], weak: list[str], streak_rows: list[dict]) -> list[str]:
+def next_day_observations(
+    main: list[str],
+    secondary: list[str],
+    weak: list[str],
+    streak_rows: list[dict] | None = None,
+) -> list[str]:
     obs: list[str] = []
     if main:
         obs.append(f"关注{main[0]}板块是否延续强势")
@@ -426,40 +556,42 @@ def next_day_observations(main: list[str], secondary: list[str], weak: list[str]
     return obs[:3]
 
 
-def build_payload() -> dict[str, Any]:
-    all_sector_syms = list({s for syms in SECTOR_STOCKS.values() for s in syms})
-    all_quote_syms = list(set(INDEX_SYMBOLS + all_sector_syms + TOP_CN_STOCKS))
-
-    log.info("Fetching quotes for %d symbols...", len(all_quote_syms))
+def build_cn_market() -> dict[str, Any]:
+    log.info("[CN] Fetching quotes...")
+    all_sector_syms = list({s for syms in CN_SECTOR_STOCKS.values() for s in syms})
+    all_quote_syms = list(set(CN_INDEX_SYMBOLS + all_sector_syms + TOP_CN_STOCKS))
     quotes = fetch_quotes_batch(all_quote_syms)
-    indices = fetch_indices(quotes)
-    sector_perf = compute_sector_perf(quotes)
+    indices = fetch_indices(quotes, CN_INDEX_SYMBOLS, CN_INDEX_NAMES)
+    sector_perf = compute_sector_perf(quotes, CN_SECTOR_STOCKS)
 
-    log.info("Capital flows...")
-    capital_inflow, capital_outflow = collect_capital_flows(TOP_CN_STOCKS, quotes)
+    log.info("[CN] Capital flows...")
+    capital_inflow, capital_outflow = collect_capital_flows(TOP_CN_STOCKS, quotes, CN_SYMBOL_NAMES)
 
-    log.info("Gainers / limit-up / streaks...")
-    top_gainers, top_losers, limit_up_stocks, streak_rows = collect_gainers_limit_streak(quotes)
-    hot_news = fetch_hot_news()
+    log.info("[CN] Gainers / limit-up / streaks...")
+    top_gainers, top_losers, limit_up_stocks, streak_rows = collect_gainers_limit_streak(
+        quotes, CN_SECTOR_STOCKS, CN_SYMBOL_NAMES, CN_SYMBOL_TO_SECTOR,
+    )
+    hot_news = fetch_hot_news_cn()
 
-    summary, tone = generate_summary(indices, sector_perf)
-    breadth = compute_breadth(quotes, limit_up_stocks)
+    summary, tone = generate_summary(indices, sector_perf, CN_PRIMARY_INDEX, CN_INDEX_LABEL)
+    breadth = compute_breadth(quotes, CN_SECTOR_STOCKS, limit_up_stocks)
     main_themes, secondary_themes, weak_sectors = identify_themes(sector_perf, limit_up_stocks)
-    sh_chg = float(indices.get("000001.SH", {}).get("change_pct") or 0)
-    risk_level, risk_desc = assess_risk(tone, breadth, sh_chg)
+    idx_chg = float(indices.get(CN_PRIMARY_INDEX, {}).get("change_pct") or 0)
+    risk_level, risk_desc = assess_risk(tone, breadth, idx_chg, has_limit_up=True)
 
     return {
-        "date": date.today().isoformat(),
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "tone": tone,
         "tone_class": tone_class(tone),
         "summary": summary,
         "indices": indices,
         "breadth": breadth,
         "sector_perf": sector_perf,
+        "sector_top3": sector_perf[:3],
         "top_gainers": top_gainers,
+        "gainers": top_gainers,
         "top_losers": top_losers,
         "limit_up_stocks": limit_up_stocks,
+        "limit_up_count": len(limit_up_stocks),
         "streak_leaders": streak_rows,
         "capital_inflow": capital_inflow,
         "capital_outflow": capital_outflow,
@@ -467,9 +599,82 @@ def build_payload() -> dict[str, Any]:
         "main_themes": main_themes,
         "secondary_themes": secondary_themes,
         "weak_sectors": weak_sectors,
+        "themes": main_themes + secondary_themes,
         "risk_level": risk_level,
         "risk_desc": risk_desc,
         "next_day_observations": next_day_observations(main_themes, secondary_themes, weak_sectors, streak_rows),
+        "observations": next_day_observations(main_themes, secondary_themes, weak_sectors, streak_rows),
+    }
+
+
+def build_hk_market() -> dict[str, Any]:
+    log.info("[HK] Fetching quotes...")
+    all_sector_syms = list({s for syms in HK_SECTOR_STOCKS.values() for s in syms})
+    all_quote_syms = list(set(HK_INDEX_SYMBOLS + all_sector_syms + TOP_HK_STOCKS))
+    quotes = fetch_quotes_batch(all_quote_syms)
+    indices = fetch_indices(quotes, HK_INDEX_SYMBOLS, HK_INDEX_NAMES)
+    sector_perf = compute_sector_perf(quotes, HK_SECTOR_STOCKS)
+
+    log.info("[HK] Capital flows...")
+    capital_inflow, capital_outflow = collect_capital_flows(TOP_HK_STOCKS, quotes, HK_SYMBOL_NAMES)
+
+    log.info("[HK] Gainers...")
+    top_gainers = collect_gainers_from_sectors(
+        quotes, HK_SECTOR_STOCKS, HK_SYMBOL_NAMES, HK_SYMBOL_TO_SECTOR,
+    )
+    top_losers = sorted(
+        [stock_row(s, quotes, HK_SYMBOL_NAMES, HK_SYMBOL_TO_SECTOR)
+         for s in {s for syms in HK_SECTOR_STOCKS.values() for s in syms}],
+        key=lambda x: (x or {}).get("change_pct", 0),
+    )
+    top_losers = [r for r in top_losers if r][:5]
+    hot_news = fetch_hot_news_hk()
+
+    summary, tone = generate_summary(indices, sector_perf, HK_PRIMARY_INDEX, HK_INDEX_LABEL)
+    breadth = compute_breadth(quotes, HK_SECTOR_STOCKS)
+    main_themes, secondary_themes, weak_sectors = identify_themes(sector_perf)
+    idx_chg = float(indices.get(HK_PRIMARY_INDEX, {}).get("change_pct") or 0)
+    risk_level, risk_desc = assess_risk(tone, breadth, idx_chg, has_limit_up=False)
+
+    return {
+        "tone": tone,
+        "tone_class": tone_class(tone),
+        "summary": summary,
+        "indices": indices,
+        "breadth": breadth,
+        "sector_perf": sector_perf,
+        "sector_top3": sector_perf[:3],
+        "top_gainers": top_gainers,
+        "gainers": top_gainers,
+        "top_losers": top_losers,
+        "capital_inflow": capital_inflow,
+        "capital_outflow": capital_outflow,
+        "hot_news": hot_news,
+        "main_themes": main_themes,
+        "secondary_themes": secondary_themes,
+        "weak_sectors": weak_sectors,
+        "themes": main_themes + secondary_themes,
+        "risk_level": risk_level,
+        "risk_desc": risk_desc,
+        "next_day_observations": next_day_observations(main_themes, secondary_themes, weak_sectors),
+        "observations": next_day_observations(main_themes, secondary_themes, weak_sectors),
+    }
+
+
+def build_payload() -> dict[str, Any]:
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        cn_future = pool.submit(build_cn_market)
+        hk_future = pool.submit(build_hk_market)
+        cn_data = cn_future.result()
+        hk_data = hk_future.result()
+
+    return {
+        "date": date.today().isoformat(),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "markets": {
+            "cn": cn_data,
+            "hk": hk_data,
+        },
     }
 
 
@@ -490,13 +695,23 @@ def main() -> int:
     payload = build_payload()
     TMP_OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     log.info("Wrote %s (%d bytes)", TMP_OUT, TMP_OUT.stat().st_size)
+    cn = payload["markets"]["cn"]
+    hk = payload["markets"]["hk"]
     preview = {
         "date": payload["date"],
-        "tone": payload["tone"],
-        "summary": payload["summary"],
-        "indices": {k: v["change_pct"] for k, v in payload["indices"].items()},
-        "sector_top3": payload["sector_perf"][:3],
-        "limit_up_count": len(payload["limit_up_stocks"]),
+        "cn": {
+            "tone": cn["tone"],
+            "summary": cn["summary"],
+            "indices": {k: v["change_pct"] for k, v in cn["indices"].items()},
+            "sector_top3": cn["sector_top3"],
+            "limit_up_count": cn.get("limit_up_count", 0),
+        },
+        "hk": {
+            "tone": hk["tone"],
+            "summary": hk["summary"],
+            "indices": {k: v["change_pct"] for k, v in hk["indices"].items()},
+            "sector_top3": hk["sector_top3"],
+        },
     }
     print(json.dumps(preview, ensure_ascii=False, indent=2))
     return 0 if upload_cos(TMP_OUT) else 1
