@@ -68,7 +68,7 @@ def safe_float(v: Any) -> float | None:
 
 def fetch_watchlist_groups() -> dict[str, list[dict]]:
     """Returns {group_name: [{"symbol": ..., "name": ...}, ...]}"""
-    raw = run_lb(["watchlist", "--format", "json"], timeout=15)
+    raw = run_lb(["watchlist", "--lang", "zh-CN", "--format", "json"], timeout=15)
     data = parse_json(raw)
     if not data:
         return {}
