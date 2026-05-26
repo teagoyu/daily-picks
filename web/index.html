@@ -727,9 +727,11 @@ var PWD_HASH='7c9b3f2e1a4d8e6f2b5c0a3d7e9f1b4c'  // placeholder replaced below
 ;(function(){
   var _h=function(s){var h=0;for(var i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0}return h>>>0}
   var _k='bloom_auth'
-  function check(p){return _h(p)===_h('al909090')}
+  var _pwds=['al909090','120901']
+  function check(p){for(var i=0;i<_pwds.length;i++){if(_h(p)===_h(_pwds[i]))return true}return false}
+  var _sig=String(_h(_pwds[0]))
   var stored=sessionStorage.getItem(_k)
-  if(stored&&stored===String(_h('al909090'))){
+  if(stored&&stored===_sig){
     document.getElementById('login-overlay').classList.add('hidden')
   }
   window.doLogin=function(){
@@ -737,7 +739,7 @@ var PWD_HASH='7c9b3f2e1a4d8e6f2b5c0a3d7e9f1b4c'  // placeholder replaced below
     var inp=document.getElementById('login-pwd')
     var err=document.getElementById('login-err')
     if(check(p)){
-      sessionStorage.setItem(_k,String(_h('al909090')))
+      sessionStorage.setItem(_k,_sig)
       var ov=document.getElementById('login-overlay')
       ov.classList.add('hidden')
       setTimeout(function(){ov.style.display='none'},400)
