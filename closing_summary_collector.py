@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A-share + HK closing summary collector: Longbridge CLI -> JSON -> Tencent COS."""
+"""A-share + HK + US closing summary collector: Longbridge CLI -> JSON -> Tencent COS."""
 
 from __future__ import annotations
 
@@ -90,6 +90,41 @@ HK_SYMBOL_NAMES = {
     "2318.HK": "中国平安", "388.HK": "香港交易所", "1810.HK": "小米集团",
 }
 
+
+# ── US market ────────────────────────────────────────────────────────────────
+US_INDEX_SYMBOLS = [".SPX.US", ".NDX.US", ".DJI.US"]
+US_INDEX_NAMES = {
+    ".SPX.US": "标普500",
+    ".NDX.US": "纳斯达克100",
+    ".DJI.US": "道琼斯",
+}
+US_PRIMARY_INDEX = ".SPX.US"
+US_INDEX_LABEL = "标普"
+
+US_SECTOR_STOCKS = {
+    "科技": ["AAPL.US", "MSFT.US", "NVDA.US", "META.US", "GOOGL.US"],
+    "消费": ["AMZN.US", "TSLA.US", "HD.US", "MCD.US"],
+    "金融": ["JPM.US", "BAC.US", "GS.US", "BRK.B.US"],
+    "医疗": ["JNJ.US", "UNH.US", "LLY.US", "ABBV.US"],
+    "能源": ["XOM.US", "CVX.US", "COP.US"],
+    "工业": ["CAT.US", "DE.US", "HON.US", "BA.US"],
+}
+
+TOP_US_STOCKS = [
+    "AAPL.US", "MSFT.US", "NVDA.US", "META.US", "GOOGL.US",
+    "AMZN.US", "TSLA.US", "JPM.US", "LLY.US", "UNH.US",
+]
+
+US_SYMBOL_NAMES = {
+    "AAPL.US": "苹果", "MSFT.US": "微软", "NVDA.US": "英伟达",
+    "META.US": "Meta", "GOOGL.US": "谷歌",
+    "AMZN.US": "亚马逊", "TSLA.US": "特斯拉", "HD.US": "家得宝", "MCD.US": "麦当劳",
+    "JPM.US": "摩根大通", "BAC.US": "美国银行", "GS.US": "高盛", "BRK.B.US": "伯克希尔B",
+    "JNJ.US": "强生", "UNH.US": "联合健康", "LLY.US": "礼来", "ABBV.US": "艾伯维",
+    "XOM.US": "埃克森美孚", "CVX.US": "雪佛龙", "COP.US": "康菲石油",
+    "CAT.US": "卡特彼勒", "DE.US": "迪尔", "HON.US": "霍尼韦尔", "BA.US": "波音",
+}
+
 CONCURRENCY = 8
 
 
@@ -103,6 +138,7 @@ def _build_symbol_to_sector(sector_stocks: dict[str, list[str]]) -> dict[str, st
 
 CN_SYMBOL_TO_SECTOR = _build_symbol_to_sector(CN_SECTOR_STOCKS)
 HK_SYMBOL_TO_SECTOR = _build_symbol_to_sector(HK_SECTOR_STOCKS)
+US_SYMBOL_TO_SECTOR = _build_symbol_to_sector(US_SECTOR_STOCKS)
 
 
 def run_lb(args: list[str], timeout: int = 45) -> str | None:
@@ -533,6 +569,31 @@ def assess_risk(tone: str, breadth: dict, idx_chg: float, has_limit_up: bool = T
     return "中等", "市场震荡，宜精选主线、避免追高"
 
 
+
+def next_day_observations_us(
+    main: list[str],
+    secondary: list[str],
+    weak: list[str],
+    top_gainers: list[dict],
+) -> list[str]:
+    obs: list[str] = []
+    if main:
+        obs.append(f"{main[0]}板块今日领涨，关注能否延续")
+    if len(main) > 1:
+        obs.append(f"{main[1]}跟进力度决定主线持续性")
+    elif secondary:
+        obs.append(f"{secondary[0]}能否接力成为新热点")
+    if top_gainers:
+        top = top_gainers[0]
+        sym_short = top["symbol"].replace(".US", "")
+        obs.append(f"{top['name']}({sym_short})涨幅{top['change_pct']:+.2f}%，为盘中焦点")
+    if weak and len(obs) < 3:
+        obs.append(f"留意{weak[0]}板块资金是否继续流出")
+    while len(obs) < 3:
+        obs.append("关注隔夜宏观数据与次日盘前走势")
+    return obs[:3]
+
+
 def next_day_observations(
     main: list[str],
     secondary: list[str],
@@ -661,12 +722,68 @@ def build_hk_market() -> dict[str, Any]:
     }
 
 
+
+def build_us_market() -> dict[str, Any]:
+    log.info("[US] Fetching quotes...")
+    all_sector_syms = list({s for syms in US_SECTOR_STOCKS.values() for s in syms})
+    all_quote_syms = list(set(US_INDEX_SYMBOLS + all_sector_syms + TOP_US_STOCKS))
+    quotes = fetch_quotes_batch(all_quote_syms)
+    indices = fetch_indices(quotes, US_INDEX_SYMBOLS, US_INDEX_NAMES)
+    sector_perf = compute_sector_perf(quotes, US_SECTOR_STOCKS)
+
+    log.info("[US] Capital flows...")
+    capital_inflow, capital_outflow = collect_capital_flows(TOP_US_STOCKS, quotes, US_SYMBOL_NAMES)
+
+    log.info("[US] Gainers...")
+    top_gainers = collect_gainers_from_sectors(
+        quotes, US_SECTOR_STOCKS, US_SYMBOL_NAMES, US_SYMBOL_TO_SECTOR,
+    )
+    top_losers = sorted(
+        [stock_row(s, quotes, US_SYMBOL_NAMES, US_SYMBOL_TO_SECTOR)
+         for s in {s for syms in US_SECTOR_STOCKS.values() for s in syms}],
+        key=lambda x: (x or {}).get("change_pct", 0),
+    )
+    top_losers = [r for r in top_losers if r][:5]
+
+    summary, tone = generate_summary(indices, sector_perf, US_PRIMARY_INDEX, US_INDEX_LABEL)
+    breadth = compute_breadth(quotes, US_SECTOR_STOCKS)
+    main_themes, secondary_themes, weak_sectors = identify_themes(sector_perf)
+    idx_chg = float(indices.get(US_PRIMARY_INDEX, {}).get("change_pct") or 0)
+    risk_level, risk_desc = assess_risk(tone, breadth, idx_chg, has_limit_up=False)
+    observations = next_day_observations_us(main_themes, secondary_themes, weak_sectors, top_gainers)
+
+    return {
+        "tone": tone,
+        "tone_class": tone_class(tone),
+        "summary": summary,
+        "indices": indices,
+        "breadth": breadth,
+        "sector_perf": sector_perf,
+        "sector_top3": sector_perf[:3],
+        "top_gainers": top_gainers,
+        "gainers": top_gainers,
+        "top_losers": top_losers,
+        "capital_inflow": capital_inflow,
+        "capital_outflow": capital_outflow,
+        "main_themes": main_themes,
+        "secondary_themes": secondary_themes,
+        "weak_sectors": weak_sectors,
+        "themes": main_themes + secondary_themes,
+        "risk_level": risk_level,
+        "risk_desc": risk_desc,
+        "next_day_observations": observations,
+        "observations": observations,
+    }
+
+
 def build_payload() -> dict[str, Any]:
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         cn_future = pool.submit(build_cn_market)
         hk_future = pool.submit(build_hk_market)
+        us_future = pool.submit(build_us_market)
         cn_data = cn_future.result()
         hk_data = hk_future.result()
+        us_data = us_future.result()
 
     return {
         "date": date.today().isoformat(),
@@ -674,6 +791,7 @@ def build_payload() -> dict[str, Any]:
         "markets": {
             "cn": cn_data,
             "hk": hk_data,
+            "us": us_data,
         },
     }
 
@@ -697,6 +815,7 @@ def main() -> int:
     log.info("Wrote %s (%d bytes)", TMP_OUT, TMP_OUT.stat().st_size)
     cn = payload["markets"]["cn"]
     hk = payload["markets"]["hk"]
+    us = payload["markets"]["us"]
     preview = {
         "date": payload["date"],
         "cn": {
@@ -711,6 +830,12 @@ def main() -> int:
             "summary": hk["summary"],
             "indices": {k: v["change_pct"] for k, v in hk["indices"].items()},
             "sector_top3": hk["sector_top3"],
+        },
+        "us": {
+            "tone": us["tone"],
+            "summary": us["summary"],
+            "indices": {k: v["change_pct"] for k, v in us["indices"].items()},
+            "sector_top3": us["sector_top3"],
         },
     }
     print(json.dumps(preview, ensure_ascii=False, indent=2))

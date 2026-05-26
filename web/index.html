@@ -573,7 +573,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <div class="hero hero-closing">
     <div class="hero-inner">
       <div class="hero-tag"><span>📊</span>CLOSE REVIEW</div>
-      <div class="hero-h1" style="font-size:36px">A股 / 港股<em style="background:linear-gradient(90deg,var(--green-l),var(--blue-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">收盘复盘</em></div>
+      <div class="hero-h1" style="font-size:36px">A股 / 港股 / 美股<em style="background:linear-gradient(90deg,var(--green-l),var(--blue-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">收盘复盘</em></div>
       <div class="hero-sub" id="closingUpdated">规则引擎 · Longbridge 实时数据 · 每日更新</div>
     </div>
   </div>
@@ -737,7 +737,7 @@ function flowRows(list,inflow,isHk){
   for(var i=0;i<list.length;i++){
     var r=list[i],amt=r.net_inflow||'—'
     var clr=inflow?'#3fb950':'#f85149'
-    var symDisp=(r.symbol||'').replace(/\.(SH|SZ|HK)$/,'')
+    var symDisp=(r.symbol||'').replace(/\.(SH|SZ|HK|US)$/,'')
     h+='<div class="cs-flow-row">'+
       '<div><div class="cs-flow-nm">'+escapeHtml(r.name||r.symbol)+'</div>'+
       '<div class="cs-flow-sub">'+escapeHtml(symDisp)+' · '+fChg(r.change_pct)+'</div></div>'+
@@ -749,9 +749,10 @@ function flowRows(list,inflow,isHk){
 function renderClosingMarket(mktData,mktKey,rootDate){
   var d=mktData||{}
   var isHk=mktKey==='hk'
+  var isUs=mktKey==='us'
   var tc=d.tone_class||'neutral',tone=d.tone||'—'
   var br=d.breadth||{}
-  var idxOrder=isHk?['HSI.HK','HSCEI.HK','HSTECH.HK']:['000001.SH','399001.SZ','399006.SZ','000300.SH']
+  var idxOrder=isUs?['.SPX.US','.NDX.US','.DJI.US']:(isHk?['HSI.HK','HSCEI.HK','HSTECH.HK']:['000001.SH','399001.SZ','399006.SZ','000300.SH'])
   var idxH=''
   for(var i=0;i<idxOrder.length;i++){
     var k=idxOrder[i],ix=(d.indices||{})[k]||{}
@@ -774,7 +775,7 @@ function renderClosingMarket(mktData,mktKey,rootDate){
   for(var b=0;b<st.length;b++)secT+='<span class="cs-tag cs-tag-sec">'+escapeHtml(st[b])+'</span>'
   for(var c=0;c<wk.length;c++)weakH+='<span class="cs-tag cs-tag-weak">'+escapeHtml(wk[c])+'</span>'
   var gainers=d.top_gainers||d.gainers||d.limit_up_stocks||[]
-  var symRe=isHk?/\.HK$/:/\.(SH|SZ)$/
+  var symRe=isUs?/\.US$/:isHk?/\.HK$/:/\.(SH|SZ)$/
   var tbl='<table class="cs-table"><thead><tr><th>#</th><th>代码</th><th>名称</th><th>涨幅</th><th>板块</th></tr></thead><tbody>'
   for(var g=0;g<gainers.length;g++){
     var t=gainers[g],gc=cClr(t.change_pct)
@@ -785,11 +786,11 @@ function renderClosingMarket(mktData,mktKey,rootDate){
   tbl+='</tbody></table>'
   var obs=d.next_day_observations||d.observations||[],obsH=''
   for(var o=0;o<obs.length;o++)obsH+='<li>'+escapeHtml(obs[o])+'</li>'
-  var mktLabel=isHk?'港股':'A股'
-  var gainersLabel=isHk?'涨幅榜':'涨停 / 涨幅榜'
+  var mktLabel=isUs?'美股':(isHk?'港股':'A股')
+  var gainersLabel=(isHk||isUs)?'涨幅榜':'涨停 / 涨幅榜'
   var breadthH='<span class="cs-bread-i">上涨 <span style="color:var(--green-l)">'+(br.up||0)+'</span></span>'+
     '<span class="cs-bread-i">下跌 <span style="color:var(--red-l)">'+(br.down||0)+'</span></span>'
-  if(!isHk)breadthH+='<span class="cs-bread-i">涨停 <span style="color:var(--yellow-l)">'+(br.limit_up||0)+'</span></span>'
+  if(!isHk&&!isUs)breadthH+='<span class="cs-bread-i">涨停 <span style="color:var(--yellow-l)">'+(br.limit_up||0)+'</span></span>'
   return '<div class="cs-header">'+
       '<div class="cs-date">'+escapeHtml(rootDate||'—')+'</div>'+
       '<div class="cs-badge cs-badge-'+tc+'">'+escapeHtml(tone)+'</div>'+
@@ -825,26 +826,31 @@ function switchClosingMarket(mkt){
 function renderClosing(d){
   if(!d){document.getElementById('closingWrap').innerHTML='<div class="empty"><div class="empty-icon">⚡</div><div class="empty-msg">数据加载失败</div></div>';return}
   var markets=d.markets
-  var cnData,hkData
+  var cnData,hkData,usData
   if(markets){
     cnData=markets.cn
     hkData=markets.hk
+    usData=markets.us
   }else{
     cnData=d
     hkData=null
+    usData=null
   }
   var mkt=S.closingMkt||'cn'
-  var mktData=mkt==='hk'?hkData:cnData
-  if(!mktData&&mkt==='hk'){mkt='cn';mktData=cnData;S.closingMkt='cn'}
+  var mktData=mkt==='hk'?hkData:(mkt==='us'?usData:cnData)
+  if(!mktData){
+    if(mkt==='hk'&&cnData){mkt='cn';mktData=cnData;S.closingMkt='cn'}
+    else if(mkt==='us'&&cnData){mkt='cn';mktData=cnData;S.closingMkt='cn'}
+  }
   var tabsH='<div class="mkt-bar" style="margin-bottom:20px">'+
     '<div class="mkt-pill cs-mkt-pill'+(mkt==='cn'?' active':'')+'" data-cm="cn" onclick="switchClosingMarket(\'cn\')">🇨🇳 A股</div>'+
     (hkData?'<div class="mkt-pill cs-mkt-pill'+(mkt==='hk'?' active':'')+'" data-cm="hk" onclick="switchClosingMarket(\'hk\')">🇭🇰 港股</div>':'')+
+    (usData?'<div class="mkt-pill cs-mkt-pill'+(mkt==='us'?' active':'')+'" data-cm="us" onclick="switchClosingMarket(\'us\')">🇺🇸 美股</div>':'')+
     '</div>'
   document.getElementById('closingWrap').innerHTML=tabsH+renderClosingMarket(mktData,mkt,d.date)
   if(d.generated_at)document.getElementById('closingUpdated').textContent='更新于 '+d.generated_at+' · 规则引擎复盘'
 }
 
-/* ─ view switch ─ */
 function switchView(v){
   S.view=v
   document.getElementById('view-picks').classList.toggle('active',v==='picks')
