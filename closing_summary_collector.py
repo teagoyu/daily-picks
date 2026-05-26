@@ -7,6 +7,7 @@ import json
 import logging
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -291,8 +292,14 @@ def parse_capital_net(data: Any) -> float | None:
     return None
 
 
-def fetch_capital_one(symbol: str) -> float | None:
-    return parse_capital_net(parse_json(run_lb(["capital", symbol], timeout=30)))
+def fetch_capital_one(symbol: str, retries: int = 2) -> float | None:
+    for attempt in range(retries + 1):
+        if attempt > 0:
+            time.sleep(2 * attempt)
+        result = parse_capital_net(parse_json(run_lb(["capital", symbol], timeout=30)))
+        if result is not None:
+            return result
+    return None
 
 
 def collect_capital_flows(
@@ -315,7 +322,7 @@ def collect_capital_flows(
             "change_pct": change_pct_from_quote(q) or 0.0,
         }
 
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         for row in pool.map(_job, symbols):
             if row:
                 rows.append(row)
@@ -777,13 +784,29 @@ def build_us_market() -> dict[str, Any]:
 
 
 def build_payload() -> dict[str, Any]:
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        cn_future = pool.submit(build_cn_market)
-        hk_future = pool.submit(build_hk_market)
-        us_future = pool.submit(build_us_market)
-        cn_data = cn_future.result()
-        hk_data = hk_future.result()
-        us_data = us_future.result()
+    # Stagger market builds to avoid hitting Longbridge's 10-connection WebSocket limit
+    import threading
+    cn_data: dict[str, Any] = {}
+    hk_data: dict[str, Any] = {}
+    us_data: dict[str, Any] = {}
+
+    def _build_hk():
+        time.sleep(3)
+        nonlocal hk_data
+        hk_data = build_hk_market()
+
+    def _build_us():
+        time.sleep(6)
+        nonlocal us_data
+        us_data = build_us_market()
+
+    t_hk = threading.Thread(target=_build_hk)
+    t_us = threading.Thread(target=_build_us)
+    t_hk.start()
+    t_us.start()
+    cn_data = build_cn_market()
+    t_hk.join()
+    t_us.join()
 
     return {
         "date": date.today().isoformat(),
