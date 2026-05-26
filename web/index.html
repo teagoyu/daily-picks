@@ -398,6 +398,39 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .cs-risk-mid{background:rgba(212,167,44,.12);color:var(--yellow-l)}
 .cs-risk-high{background:rgba(207,47,42,.15);color:var(--red-l)}
 .cs-risk-desc{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ══ WATCHLIST ══════════════════════════════════ */
+.hero-watchlist::before{background:radial-gradient(ellipse 70% 80% at 50% -20%,rgba(212,167,44,.07),transparent)}
+.wl-group{margin-bottom:32px}
+.wl-group-title{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px;padding-left:2px;display:flex;align-items:center;gap:8px}
+.wl-group-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.wl-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:600px){.wl-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.wl-grid{grid-template-columns:repeat(3,1fr)}}
+.wl-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .18s}
+.wl-card:hover{border-color:var(--border-l)}
+.wl-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.wl-name{font-size:15px;font-weight:700;color:var(--text)}
+.wl-symbol{font-size:11px;color:var(--muted);margin-top:2px;font-family:ui-monospace,monospace}
+.wl-price-block{text-align:right;flex-shrink:0}
+.wl-price{font-size:17px;font-weight:800;font-family:ui-monospace,monospace}
+.wl-chg{font-size:12px;font-weight:700;margin-top:2px}
+.wl-chg.up{color:var(--green-l)}.wl-chg.dn{color:var(--red-l)}.wl-chg.flat{color:var(--muted)}
+.wl-tech{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wl-ma-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.wl-ma-bull{background:rgba(46,160,67,.15);color:var(--green-l);border:1px solid rgba(63,185,80,.25)}
+.wl-ma-bear{background:rgba(207,47,42,.12);color:var(--red-l);border:1px solid rgba(248,81,73,.25)}
+.wl-ma-neutral{background:rgba(212,167,44,.1);color:var(--yellow-l);border:1px solid rgba(227,179,65,.25)}
+.wl-rsi{font-size:11px;color:var(--muted)}
+.wl-rsi-warn{color:var(--red-l);font-weight:700}
+.wl-rsi-os{color:var(--green-l);font-weight:700}
+.wl-news{border-top:1px solid var(--border-l);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+.wl-news-item{font-size:12px;color:var(--text-2);line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl-news-time{font-size:10px;color:var(--muted-2);flex-shrink:0;white-space:nowrap}
+.wl-fundamentals{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border-l);padding-top:8px}
+.wl-fund-item{flex:1;min-width:60px;background:var(--bg-card2);border-radius:8px;padding:5px 8px;text-align:center}
+.wl-fund-l{font-size:10px;color:var(--muted);margin-bottom:2px}
+.wl-fund-v{font-size:13px;font-weight:700;color:var(--text-2)}
 </style>
 </head>
 <body>
@@ -421,6 +454,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </button>
       <button class="nav-tab" id="tab-closing" onclick="switchView('closing')">
         <span>📊</span> 收盘总结
+      </button>
+      <button class="nav-tab" id="tab-watchlist" onclick="switchView('watchlist')">
+        <span>⭐</span> 自选股
       </button>
     </div>
     <div class="nav-right">
@@ -588,6 +624,25 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </div>
 
 <div class="footer">Bloom · 数据来源 Longbridge · 仅供参考，不构成投资建议</div>
+
+<!-- ══════════ WATCHLIST VIEW ════════════════════ -->
+<div class="page-view" id="view-watchlist">
+  <div class="hero hero-watchlist">
+    <div class="hero-inner">
+      <div class="hero-tag"><span>⭐</span>MY WATCHLIST</div>
+      <div class="hero-h1">自选股<em style="background:linear-gradient(90deg,var(--yellow-l),var(--green-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">监控面板</em></div>
+      <div class="hero-sub" id="watchlistUpdated">从长桥自选股同步 · 均线 · 新闻 · 基本面</div>
+    </div>
+  </div>
+  <div class="wrap" id="watchlistWrap">
+    <div class="skel-grid">
+      <div class="skel" style="height:180px"></div>
+      <div class="skel" style="height:180px"></div>
+      <div class="skel" style="height:180px"></div>
+      <div class="skel" style="height:180px"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ── Modal ──────────────────────────────── -->
 <div class="overlay" id="overlay" onclick="closeMdl(event)">
@@ -857,11 +912,14 @@ function switchView(v){
   document.getElementById('view-briefing').classList.toggle('active',v==='briefing')
   document.getElementById('view-analysis').classList.toggle('active',v==='analysis')
   document.getElementById('view-closing').classList.toggle('active',v==='closing')
+  document.getElementById('view-watchlist').classList.toggle('active',v==='watchlist')
   document.getElementById('tab-picks').classList.toggle('active',v==='picks')
   document.getElementById('tab-briefing').classList.toggle('active',v==='briefing')
   document.getElementById('tab-analysis').classList.toggle('active',v==='analysis')
   document.getElementById('tab-closing').classList.toggle('active',v==='closing')
+  document.getElementById('tab-watchlist').classList.toggle('active',v==='watchlist')
   window.scrollTo({top:0,behavior:'smooth'})
+  if(v==='watchlist' && !S.watchlist) fetchWatchlist()
 }
 
 /* ─ market switch ─ */
@@ -1004,6 +1062,80 @@ function openMdl(js){
 function closeMdl(e){if(!e||e.target===document.getElementById('overlay'))document.getElementById('overlay').classList.remove('open')}
 document.getElementById('mdl').addEventListener('click',function(e){e.stopPropagation()})
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('overlay').classList.remove('open')})
+
+/* ─ watchlist ─ */
+function fetchWatchlist(){
+  fetch(COS+'/watchlist/latest.json?t='+Date.now())
+    .then(function(r){return r.json()})
+    .then(function(d){S.watchlist=d;renderWatchlist(d)})
+    .catch(function(){document.getElementById('watchlistWrap').innerHTML='<div class="empty"><div class="empty-icon">⚡</div><div class="empty-msg">数据加载失败，请刷新重试</div></div>'})
+}
+
+function maBadgeClass(sig){
+  if(sig==='多头排列'||sig==='短期偏强') return 'wl-ma-bull'
+  if(sig==='空头排列'||sig==='短期偏弱') return 'wl-ma-bear'
+  return 'wl-ma-neutral'
+}
+
+function renderWatchlist(d){
+  if(!d||!d.groups||!d.groups.length){
+    document.getElementById('watchlistWrap').innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-msg">暂无自选股数据</div></div>'
+    return
+  }
+  if(d.updated_at) document.getElementById('watchlistUpdated').textContent='更新于 '+d.updated_at+' · 从长桥自选股同步'
+  var html=''
+  for(var gi=0;gi<d.groups.length;gi++){
+    var g=d.groups[gi]
+    html+='<div class="wl-group">'
+    html+='<div class="wl-group-title">'+g.group+' <span style="font-size:11px;font-weight:400;color:var(--muted-2)">'+g.stocks.length+'只</span></div>'
+    html+='<div class="wl-grid">'
+    for(var si=0;si<g.stocks.length;si++){
+      var s=g.stocks[si]
+      var chg=s.change_pct
+      var chgCls=chg>0?'up':(chg<0?'dn':'flat')
+      var chgStr=chg!=null?((chg>0?'+':'')+chg.toFixed(2)+'%'):'—'
+      var priceClr=chg>0?'var(--green-l)':(chg<0?'var(--red-l)':'var(--text)')
+      // card
+      html+='<div class="wl-card">'
+      // top row
+      html+='<div class="wl-card-top">'
+      html+='<div><div class="wl-name">'+s.name+'</div><div class="wl-symbol">'+s.symbol+'</div></div>'
+      html+='<div class="wl-price-block">'
+      html+='<div class="wl-price" style="color:'+priceClr+'">'+(s.price!=null?s.price:'—')+'</div>'
+      html+='<div class="wl-chg '+chgCls+'">'+chgStr+'</div>'
+      html+='</div></div>'
+      // technicals
+      if(s.ma_signal||s.rsi14!=null){
+        html+='<div class="wl-tech">'
+        if(s.ma_signal) html+='<span class="wl-ma-badge '+maBadgeClass(s.ma_signal)+'">'+s.ma_signal+'</span>'
+        if(s.rsi14!=null){
+          var rsiCls=s.rsi14>70?'wl-rsi-warn':(s.rsi14<30?'wl-rsi-os':'wl-rsi')
+          html+='<span class="'+rsiCls+'">RSI '+s.rsi14.toFixed(1)+(s.rsi_signal?' · '+s.rsi_signal:'')+'</span>'
+        }
+        html+='</div>'
+      }
+      // news
+      if(s.news&&s.news.length){
+        html+='<div class="wl-news">'
+        for(var ni=0;ni<s.news.length;ni++){
+          html+='<div class="wl-news-item" title="'+s.news[ni].title+'">'+s.news[ni].title+'</div>'
+        }
+        html+='</div>'
+      }
+      // fundamentals
+      if(s.pe!=null||s.pb!=null||s.market_cap){
+        html+='<div class="wl-fundamentals">'
+        if(s.pe!=null) html+='<div class="wl-fund-item"><div class="wl-fund-l">PE</div><div class="wl-fund-v">'+s.pe.toFixed(1)+'</div></div>'
+        if(s.pb!=null) html+='<div class="wl-fund-item"><div class="wl-fund-l">PB</div><div class="wl-fund-v">'+s.pb.toFixed(2)+'</div></div>'
+        if(s.market_cap) html+='<div class="wl-fund-item"><div class="wl-fund-l">市值</div><div class="wl-fund-v">'+s.market_cap+'</div></div>'
+        html+='</div>'
+      }
+      html+='</div>' // .wl-card
+    }
+    html+='</div></div>' // .wl-grid .wl-group
+  }
+  document.getElementById('watchlistWrap').innerHTML=html
+}
 
 /* ─ fetch ─ */
 fetch(COS+'/daily_picks/latest.json?t='+Date.now())
