@@ -105,7 +105,7 @@ def fetch_quotes_batch(symbols: list[str]) -> dict[str, dict]:
 
 
 def change_pct_from_quote(q: dict) -> float | None:
-    for key in ("last_done_chg_pct", "change_rate", "change_pct", "chg_pct"):
+    for key in ("last_done_chg_pct", "change_rate", "change_pct", "chg_pct", "change_percentage"):
         v = safe_float(q.get(key))
         if v is not None:
             return round(v, 2)
