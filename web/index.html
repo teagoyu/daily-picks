@@ -744,18 +744,27 @@ var PWD_HASH='7c9b3f2e1a4d8e6f2b5c0a3d7e9f1b4c'  // placeholder replaced below
   var _h=function(s){var h=0;for(var i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0}return h>>>0}
   var _k='bloom_auth'
   var _pwds=['al909090','120901']
+  // _sig stores the hash of the matched password to distinguish roles
   function check(p){for(var i=0;i<_pwds.length;i++){if(_h(p)===_h(_pwds[i]))return true}return false}
-  var _sig=String(_h(_pwds[0]))
+  function applyRole(sig){
+    // Only 120901 can see watchlist tab
+    var canWl=sig===String(_h('120901'))
+    var wlTab=document.getElementById('tab-watchlist')
+    if(wlTab) wlTab.style.display=canWl?'':'none'
+  }
   var stored=sessionStorage.getItem(_k)
-  if(stored&&stored===_sig){
+  if(stored&&(stored===String(_h(_pwds[0]))||stored===String(_h(_pwds[1])))){
     document.getElementById('login-overlay').classList.add('hidden')
+    applyRole(stored)
   }
   window.doLogin=function(){
     var p=document.getElementById('login-pwd').value
     var inp=document.getElementById('login-pwd')
     var err=document.getElementById('login-err')
     if(check(p)){
-      sessionStorage.setItem(_k,_sig)
+      var sig=String(_h(p))
+      sessionStorage.setItem(_k,sig)
+      applyRole(sig)
       var ov=document.getElementById('login-overlay')
       ov.classList.add('hidden')
       setTimeout(function(){ov.style.display='none'},400)
